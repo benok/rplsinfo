@@ -8,6 +8,9 @@ project "rplsinfo"
 
    files { "**.h", "**.cpp" }
 
+   filter "action:gmake"
+      excludes { "stdafx.*", "targetver.h" }
+
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
