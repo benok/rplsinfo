@@ -5,7 +5,7 @@
 #include "rplsinfo.h"
 
 
-// ’è”
+// å®šæ•°
 
 #define		MEDIATYPE_TB		0x5442
 #define		MEDIATYPE_BS		0x4253
@@ -30,7 +30,7 @@
 
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 bool			readTsProgInfo(HANDLE, ProgInfo *, const int32_t, const CopyParams*);
 

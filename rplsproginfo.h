@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		ADR_APPINFO				0x28
 #define		ADR_TIMEZONE			0x08
@@ -50,7 +50,7 @@
 
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 bool		readFileProgInfo(_TCHAR *, ProgInfo*, const CopyParams *);
 int32_t		rplsTsCheck(HANDLE);

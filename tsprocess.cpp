@@ -11,16 +11,16 @@
 #include "tsprocess.h"
 
 
-// ƒ}ƒNƒ’è‹`
+// ãƒã‚¯ãƒ­å®šç¾©
 
 // #define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
 
 
 //
-// ƒpƒPƒbƒgˆ—ŠÖŒWƒ‹[ƒ`ƒ“
+// ãƒ‘ã‚±ãƒƒãƒˆå‡¦ç†é–¢ä¿‚ãƒ«ãƒ¼ãƒãƒ³
 //
 
-int32_t getPid(const uint8_t* buf)							// buf‚Í0x47ƒwƒbƒ_‚ÌêŠ
+int32_t getPid(const uint8_t* buf)							// bufã¯0x47ãƒ˜ãƒƒãƒ€ã®å ´æ‰€
 {
 	return (buf[0x01] & 0x1F) * 256 + buf[0x02];
 }
@@ -63,7 +63,7 @@ int32_t	getPointerFieldLength(const uint8_t* buf)
 }
 
 
-int32_t getSectionLength(const uint8_t* buf)						// buf‚ÍTableID‚ÌêŠ
+int32_t getSectionLength(const uint8_t* buf)						// bufã¯TableIDã®å ´æ‰€
 {
 	return (buf[0x01] & 0x0F) * 256 + buf[0x02];
 }
@@ -100,7 +100,7 @@ int32_t getPsiPacket(TsReadProcess *ts, uint8_t* psibuf, const int32_t pid)
 		{
 			const bool		bPsiTop = isPsiTop(buf);
 			const int32_t	adaplen = getAdapFieldLength(buf);
-			const int32_t	pflen = getPointerFieldLength(buf);					// !bPsiTop‚Èê‡‚Í–³ˆÓ–¡‚È’l
+			const int32_t	pflen = getPointerFieldLength(buf);					// !bPsiTopãªå ´åˆã¯ç„¡æ„å‘³ãªå€¤
 
 			int32_t		len;
 			bool		bTop = false;
@@ -108,7 +108,7 @@ int32_t getPsiPacket(TsReadProcess *ts, uint8_t* psibuf, const int32_t pid)
 
 			int32_t		i = adaplen + 4;
 
-			while (i < 188)														// 188ƒoƒCƒgƒpƒPƒbƒg“à‚Å‚ÌŠeƒZƒNƒVƒ‡ƒ“‚Ìƒ‹[ƒv
+			while (i < 188)														// 188ãƒã‚¤ãƒˆãƒ‘ã‚±ãƒƒãƒˆå†…ã§ã®å„ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒ«ãƒ¼ãƒ—
 			{
 				if (!bPsiTop) {
 					len = 188 - i;
@@ -125,8 +125,8 @@ int32_t getPsiPacket(TsReadProcess *ts, uint8_t* psibuf, const int32_t pid)
 						i++;
 						bFirstSection = false;
 					}
-					if (buf[i] == 0xFF) break;									// TableID‚Ì‚ ‚é‚×‚«êŠ‚ª0xFF(stuffing byte)‚È‚ç‚»‚ÌƒpƒPƒbƒg‚ÉŠÖ‚·‚éˆ—‚ÍI—¹
-					len = getSectionLength(buf + i) + 3;						// ƒZƒNƒVƒ‡ƒ“ƒwƒbƒ_‚ÍƒpƒPƒbƒg‚É‚Ü‚½‚ª‚Á‚Ä”z’u‚³‚ê‚é‚±‚Æ‚Í–³‚¢‚Í‚¸‚È‚Ì‚ÅƒpƒPƒbƒg”ÍˆÍŠO(188ƒoƒCƒgˆÈ~)‚ğ“Ç‚İ‚És‚­‚±‚Æ‚Í–³‚¢‚Í‚¸
+					if (buf[i] == 0xFF) break;									// TableIDã®ã‚ã‚‹ã¹ãå ´æ‰€ãŒ0xFF(stuffing byte)ãªã‚‰ãã®ãƒ‘ã‚±ãƒƒãƒˆã«é–¢ã™ã‚‹å‡¦ç†ã¯çµ‚äº†
+					len = getSectionLength(buf + i) + 3;						// ã‚»ã‚¯ã‚·ãƒ§ãƒ³ãƒ˜ãƒƒãƒ€ã¯ãƒ‘ã‚±ãƒƒãƒˆã«ã¾ãŸãŒã£ã¦é…ç½®ã•ã‚Œã‚‹ã“ã¨ã¯ç„¡ã„ã¯ãšãªã®ã§ãƒ‘ã‚±ãƒƒãƒˆç¯„å›²å¤–(188ãƒã‚¤ãƒˆä»¥é™)ã‚’èª­ã¿ã«è¡Œãã“ã¨ã¯ç„¡ã„ã¯ãš
 					if (i + len > 188) len = 188 - i;
 					bTop = true;
 				}
@@ -176,7 +176,7 @@ int32_t parsePat(const uint8_t* buf, int32_t* pmtpid)
 		int32_t		service_id = buf[i] * 256 + buf[i + 1];
 		int32_t		pid = getPidValue(buf + i + 2);
 
-		if (service_id != 0) {								// service_id == 0 ‚Í NIT
+		if (service_id != 0) {								// service_id == 0 ã¯ NIT
 			int32_t		j;
 			bool		bNewPmtPid = true;
 			for (j = 0; j < programcount; j++) {
@@ -199,7 +199,7 @@ void parsePmt(const uint8_t* buf, int32_t* pcrpid, int32_t* videopid, int32_t* r
 
 	if (pcrpid != NULL) *pcrpid = getPidValue(buf + 0x08);
 
-	// secondloop‚©‚çˆ—
+	// secondloopã‹ã‚‰å‡¦ç†
 
 	int32_t		i = 0x0C + pinfolen;
 
@@ -208,7 +208,7 @@ void parsePmt(const uint8_t* buf, int32_t* pcrpid, int32_t* videopid, int32_t* r
 
 	while (i < (seclen - 1)) {
 
-		// ‚±‚±‚Åbuf[i]‚ªstream_type, 0x06(š–‹,•¶šƒX[ƒp[), 0x0D(ƒf[ƒ^•ú‘—), 0x02(mpeg2 video)
+		// ã“ã“ã§buf[i]ãŒstream_type, 0x06(å­—å¹•,æ–‡å­—ã‚¹ãƒ¼ãƒ‘ãƒ¼), 0x0D(ãƒ‡ãƒ¼ã‚¿æ”¾é€), 0x02(mpeg2 video)
 
 		esinfolen = getLength(buf + i + 0x03);
 
@@ -220,8 +220,8 @@ void parsePmt(const uint8_t* buf, int32_t* pcrpid, int32_t* videopid, int32_t* r
 	}
 
 	if (bRmCap || bRmDat) {
-		rmpid[rmcount++] = 0x1FFF;															// NULLƒpƒPƒbƒgPID’Ç‰Á
-		qsort(rmpid, rmcount, sizeof(int32_t), compareForPidTable);								// íœ—pPID‚Ì¸‡ƒ\[ƒg
+		rmpid[rmcount++] = 0x1FFF;															// NULLãƒ‘ã‚±ãƒƒãƒˆPIDè¿½åŠ 
+		qsort(rmpid, rmcount, sizeof(int32_t), compareForPidTable);								// å‰Šé™¤ç”¨PIDã®æ˜‡é †ã‚½ãƒ¼ãƒˆ
 	}
 
 	if (rmnum != NULL) *rmnum = rmcount;
@@ -230,7 +230,7 @@ void parsePmt(const uint8_t* buf, int32_t* pcrpid, int32_t* videopid, int32_t* r
 }
 
 
-int32_t compareForPidTable(const void *item1, const void *item2)							// íœPIDƒe[ƒuƒ‹ qsort, bsearch —pŠÖ”
+int32_t compareForPidTable(const void *item1, const void *item2)							// å‰Šé™¤PIDãƒ†ãƒ¼ãƒ–ãƒ« qsort, bsearch ç”¨é–¢æ•°
 {
 	return *(int32_t*)item1 - *(int32_t*)item2;
 }
@@ -283,7 +283,7 @@ uint32_t calc_crc32(const uint8_t *buf, const int32_t len)
 }
 
 
-int32_t getPcrPid(const uint8_t* buf)							// buf‚ªPMTƒZƒNƒVƒ‡ƒ“‚ÌTableID‚ÌˆÊ’u
+int32_t getPcrPid(const uint8_t* buf)							// bufãŒPMTã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®TableIDã®ä½ç½®
 {
 	return getPidValue(buf + 0x08);
 }
@@ -291,8 +291,8 @@ int32_t getPcrPid(const uint8_t* buf)							// buf‚ªPMTƒZƒNƒVƒ‡ƒ“‚ÌTableID‚ÌˆÊ’u
 
 bool isPcrData(const uint8_t* buf)
 {
-	// buf‚ª0x47‚ÌˆÊ’u
-	// adaptation_field‚ª‘¶İ‚µ‚ÄA‚»‚Ì’·‚³‚ª0‚Å‚È‚­APCR_flag‚ª1‚È‚çtrue
+	// bufãŒ0x47ã®ä½ç½®
+	// adaptation_fieldãŒå­˜åœ¨ã—ã¦ã€ãã®é•·ã•ãŒ0ã§ãªãã€PCR_flagãŒ1ãªã‚‰true
 
 	if (((buf[0x03] & 0x20) != 0) && (buf[0x04] != 0) && ((buf[0x05] & 0x10) != 0)) return true;
 
@@ -302,9 +302,9 @@ bool isPcrData(const uint8_t* buf)
 
 int64_t getPcrValue(const uint8_t* buf)
 {
-	// buf‚ª0x47‚ÌˆÊ’u
+	// bufãŒ0x47ã®ä½ç½®
 
-	const uint8_t*		pcr = buf + 6;						// pcr_clock_reference_base‚Ìæ“ª
+	const uint8_t*		pcr = buf + 6;						// pcr_clock_reference_baseã®å…ˆé ­
 
 	int64_t		pcr_base = ((int64_t)pcr[0x00] << 25) + ((int64_t)pcr[0x01] << 17) + ((int64_t)pcr[0x02] << 9) + ((int64_t)pcr[0x03] << 1) + (((int64_t)pcr[0x04] & 0x80) >> 7);
 	int64_t		pcr_ext = (((int64_t)pcr[0x04] & 0x01) << 8) + (int64_t)pcr[0x05];
@@ -317,10 +317,10 @@ int64_t getPcrValue(const uint8_t* buf)
 
 // -------------------------------------------------------------------------------------------------------
 //
-// ƒtƒ@ƒCƒ‹“üo—ÍŠÖŒWƒ‹[ƒ`ƒ“
+// ãƒ•ã‚¡ã‚¤ãƒ«å…¥å‡ºåŠ›é–¢ä¿‚ãƒ«ãƒ¼ãƒãƒ³
 //
 
-int64_t GetFileDataSize(HANDLE hReadFile)																// ƒtƒ@ƒCƒ‹ƒTƒCƒYæ“¾—pŠÖ”
+int64_t GetFileDataSize(HANDLE hReadFile)																// ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚ºå–å¾—ç”¨é–¢æ•°
 {
 	LARGE_INTEGER		filesize;
 	GetFileSizeEx(hReadFile, &filesize);
@@ -329,7 +329,7 @@ int64_t GetFileDataSize(HANDLE hReadFile)																// ƒtƒ@ƒCƒ‹ƒTƒCƒYæ“¾—p
 }
 
 
-void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ƒtƒ@ƒCƒ‹ƒV[ƒN—pŠÖ”
+void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ãƒ•ã‚¡ã‚¤ãƒ«ã‚·ãƒ¼ã‚¯ç”¨é–¢æ•°
 {
 	LARGE_INTEGER	fbase;
 	fbase.QuadPart = filepos;
@@ -339,7 +339,7 @@ void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ƒtƒ@ƒCƒ
 }
 
 
-bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t *numread)					// ƒfƒBƒXƒN“Ç‚İ‚İ—pŠÖ”
+bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t *numread)					// ãƒ‡ã‚£ã‚¹ã‚¯èª­ã¿è¾¼ã¿ç”¨é–¢æ•°
 {
 	bool	bResult = !!ReadFile(hReadFile, buf, size, (LPDWORD)numread, NULL);
 
@@ -347,7 +347,7 @@ bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t 
 }
 
 
-bool WriteFileData(HANDLE hWriteFile, const uint8_t *buf, const uint32_t size, uint32_t *numwrite)		// ƒfƒBƒXƒN‘‚«‚İ—pŠÖ”
+bool WriteFileData(HANDLE hWriteFile, const uint8_t *buf, const uint32_t size, uint32_t *numwrite)		// ãƒ‡ã‚£ã‚¹ã‚¯æ›¸ãè¾¼ã¿ç”¨é–¢æ•°
 {
 	bool	bResult = !!WriteFile(hWriteFile, buf, size, (LPDWORD)numwrite, NULL);
 
@@ -409,17 +409,17 @@ uint8_t* getPacketTsFileRead(TsReadProcess *ts)
 	uint32_t	numRead;
 	int32_t		remainings = ts->datasize - ts->pos;
 
-	if(remainings < ts->psize) {														// ƒoƒbƒtƒ@’†‚Ìƒf[ƒ^c‚è‚ªpacketsize–¢–‚É‚È‚Á‚½ê‡, ‘±‚«‚Ìƒf[ƒ^“Ç‚İ‚İ‚ğ‚İ‚é
+	if(remainings < ts->psize) {														// ãƒãƒƒãƒ•ã‚¡ä¸­ã®ãƒ‡ãƒ¼ã‚¿æ®‹ã‚ŠãŒpacketsizeæœªæº€ã«ãªã£ãŸå ´åˆ, ç¶šãã®ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿ã‚’è©¦ã¿ã‚‹
 
-		if(ts->datasize != READBUFSIZE) return NULL;									// Šù‚Éƒtƒ@ƒCƒ‹I’[‚Ü‚Å“Ç‚İI‚í‚Á‚Ä‚¢‚éê‡,  I—¹ƒTƒCƒ“(NULL)‚ğ•Ô‚·
+		if(ts->datasize != READBUFSIZE) return NULL;									// æ—¢ã«ãƒ•ã‚¡ã‚¤ãƒ«çµ‚ç«¯ã¾ã§èª­ã¿çµ‚ã‚ã£ã¦ã„ã‚‹å ´åˆ,  çµ‚äº†ã‚µã‚¤ãƒ³(NULL)ã‚’è¿”ã™
 
-		memcpy(ts->buf - remainings, ts->buf + ts->pos, remainings);					// ƒf[ƒ^”¼’[•ª‚ğƒoƒbƒtƒ@‘O‚ÉƒRƒs[
+		memcpy(ts->buf - remainings, ts->buf + ts->pos, remainings);					// ãƒ‡ãƒ¼ã‚¿åŠç«¯åˆ†ã‚’ãƒãƒƒãƒ•ã‚¡å‰ã«ã‚³ãƒ”ãƒ¼
 		ts->pos	= 0 - remainings;
 
-		ReadFileData(ts->hFile, ts->buf, READBUFSIZE, &numRead);							// ƒoƒbƒtƒ@‚Éƒf[ƒ^“Ç‚İ‚İ
+		ReadFileData(ts->hFile, ts->buf, READBUFSIZE, &numRead);							// ãƒãƒƒãƒ•ã‚¡ã«ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿
 		ts->datasize = numRead;
 
-		if( (ts->datasize - ts->pos) < ts->psize ) return NULL;							// ‘±‚«‚ğ“Ç‚ñ‚Å‚àpacketsize‚É‘«‚è‚È‚¢ê‡‚ÍI—¹
+		if( (ts->datasize - ts->pos) < ts->psize ) return NULL;							// ç¶šãã‚’èª­ã‚“ã§ã‚‚packetsizeã«è¶³ã‚Šãªã„å ´åˆã¯çµ‚äº†
 	}
 
 	if(ts->buf[ts->pos + ts->poffset] == 0x47) {
@@ -427,47 +427,47 @@ uint8_t* getPacketTsFileRead(TsReadProcess *ts)
 		uint8_t		*packetadr = ts->buf + ts->pos;
 		ts->pos += ts->psize;
 
-		return packetadr;																// ƒpƒPƒbƒgƒwƒbƒ_0x47‚ğŠm”F‚µ‚½‚ç‚»‚ÌƒAƒhƒŒƒX‚ğ•Ô‚·
+		return packetadr;																// ãƒ‘ã‚±ãƒƒãƒˆãƒ˜ãƒƒãƒ€0x47ã‚’ç¢ºèªã—ãŸã‚‰ãã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’è¿”ã™
 	}
 
-	// ƒpƒPƒbƒgƒwƒbƒ_0x47‚ğŒ©¸‚Á‚½ê‡Aæ“ª‚ğ’T‚·
+	// ãƒ‘ã‚±ãƒƒãƒˆãƒ˜ãƒƒãƒ€0x47ã‚’è¦‹å¤±ã£ãŸå ´åˆã€å…ˆé ­ã‚’æ¢ã™
 
 //	printMsg("sync lost.\n");
 
-	const int32_t	resyncsize = ts->psize * 2 + 1 + ts->poffset;						// 3ŒÂ‚Ì˜A‘±‚·‚éƒwƒbƒ_0x47‚ğŠm”F‚µ‚½‚çÄ“¯Šú‚µ‚½‚ÆŒ©‚È‚·‚Ì‚ÅA‚»‚ê‚É•K—v‚ÈƒTƒCƒY
+	const int32_t	resyncsize = ts->psize * 2 + 1 + ts->poffset;						// 3å€‹ã®é€£ç¶šã™ã‚‹ãƒ˜ãƒƒãƒ€0x47ã‚’ç¢ºèªã—ãŸã‚‰å†åŒæœŸã—ãŸã¨è¦‹ãªã™ã®ã§ã€ãã‚Œã«å¿…è¦ãªã‚µã‚¤ã‚º
 	int64_t			brokenbyte = 0;
 
 	while(1)
 	{
 		remainings = ts->datasize - ts->pos;
 
-		if(remainings < resyncsize) {													// c‚èƒf[ƒ^‚ªÄ“¯ŠúŠm”F‚É•K—v‚ÈƒTƒCƒY‚æ‚è­‚È‚¢ê‡
+		if(remainings < resyncsize) {													// æ®‹ã‚Šãƒ‡ãƒ¼ã‚¿ãŒå†åŒæœŸç¢ºèªã«å¿…è¦ãªã‚µã‚¤ã‚ºã‚ˆã‚Šå°‘ãªã„å ´åˆ
 
-			if(ts->datasize != READBUFSIZE) return NULL;								// Šù‚Éƒtƒ@ƒCƒ‹I’[‚Ü‚Å“Ç‚İI‚í‚Á‚Ä‚¢‚éê‡,  I—¹ƒTƒCƒ“(NULL)‚ğ•Ô‚·
+			if(ts->datasize != READBUFSIZE) return NULL;								// æ—¢ã«ãƒ•ã‚¡ã‚¤ãƒ«çµ‚ç«¯ã¾ã§èª­ã¿çµ‚ã‚ã£ã¦ã„ã‚‹å ´åˆ,  çµ‚äº†ã‚µã‚¤ãƒ³(NULL)ã‚’è¿”ã™
 
-			memcpy(ts->buf - remainings, ts->buf + ts->pos, remainings);				// ƒf[ƒ^”¼’[•ª‚ğƒoƒbƒtƒ@‘O‚ÉƒRƒs[
+			memcpy(ts->buf - remainings, ts->buf + ts->pos, remainings);				// ãƒ‡ãƒ¼ã‚¿åŠç«¯åˆ†ã‚’ãƒãƒƒãƒ•ã‚¡å‰ã«ã‚³ãƒ”ãƒ¼
 			ts->pos	= 0 - remainings;
 
-			ReadFileData(ts->hFile, ts->buf, READBUFSIZE, &numRead);						// ƒoƒbƒtƒ@‚Éƒf[ƒ^“Ç‚İ‚İ
+			ReadFileData(ts->hFile, ts->buf, READBUFSIZE, &numRead);						// ãƒãƒƒãƒ•ã‚¡ã«ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿
 			ts->datasize = numRead;
 
-			if( (ts->datasize - ts->pos) < resyncsize ) return NULL;					// ‘±‚«‚ğ“Ç‚ñ‚Å‚àresyncsize‚É‘«‚è‚È‚¢ê‡‚ÍI—¹
+			if( (ts->datasize - ts->pos) < resyncsize ) return NULL;					// ç¶šãã‚’èª­ã‚“ã§ã‚‚resyncsizeã«è¶³ã‚Šãªã„å ´åˆã¯çµ‚äº†
 		}
 
-		if( (ts->buf[ts->pos + ts->poffset] == 0x47) && (ts->buf[ts->pos + ts->psize + ts->poffset] == 0x47) && (ts->buf[ts->pos + ts->psize * 2 + ts->poffset] == 0x47) ) break;	// ƒpƒPƒbƒgƒwƒbƒ_‚ğŒŸo‚µ‚½
+		if( (ts->buf[ts->pos + ts->poffset] == 0x47) && (ts->buf[ts->pos + ts->psize + ts->poffset] == 0x47) && (ts->buf[ts->pos + ts->psize * 2 + ts->poffset] == 0x47) ) break;	// ãƒ‘ã‚±ãƒƒãƒˆãƒ˜ãƒƒãƒ€ã‚’æ¤œå‡ºã—ãŸ
 
 		ts->pos++;
 		brokenbyte++;
 	}
 
-	// 0x47 “¯Šú‰ñ•œ
+	// 0x47 åŒæœŸå›å¾©
 
-//	if(ts->bShowError) printMsg("%I64dƒoƒCƒg‚Ì•s³‚Èƒf[ƒ^‚ğíœ‚µ‚Ü‚µ‚½.\n", brokenbyte);
+//	if(ts->bShowError) printMsg("%I64dãƒã‚¤ãƒˆã®ä¸æ­£ãªãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤ã—ã¾ã—ãŸ.\n", brokenbyte);
 
 	uint8_t		*packetadr = ts->buf + ts->pos;
 	ts->pos += ts->psize;
 
-	return packetadr;																	// ƒpƒPƒbƒgƒwƒbƒ_0x47‚ÌƒAƒhƒŒƒX‚ğ•Ô‚·
+	return packetadr;																	// ãƒ‘ã‚±ãƒƒãƒˆãƒ˜ãƒƒãƒ€0x47ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’è¿”ã™
 }
 
 

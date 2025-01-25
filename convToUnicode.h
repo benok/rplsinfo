@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		REGION_GL			0
 #define		REGION_GR			1
@@ -15,7 +15,7 @@
 #define		BANK_G2				2
 #define		BANK_G3				3
 
-#define		F_KANJI				0x42		// GƒZƒbƒg‚ÌI’[•„†
+#define		F_KANJI				0x42		// Gã‚»ãƒƒãƒˆã®çµ‚ç«¯ç¬¦å·
 #define		F_ALPHA				0x4A
 #define		F_HIRAGANA			0x30
 #define		F_KATAKANA			0x31
@@ -31,7 +31,7 @@
 #define		F_JIS2KANJI			0x3A
 #define		F_KIGOU				0x3B
 
-#define		F_DRCS0				0x40		// DRCS‚ÌI’[•„†
+#define		F_DRCS0				0x40		// DRCSã®çµ‚ç«¯ç¬¦å·
 #define		F_DRCS1				0x41
 #define		F_DRCS2				0x42
 #define		F_DRCS3				0x43
@@ -49,8 +49,8 @@
 #define		F_DRCS15			0x4f
 #define		F_MACRO				0x70	
 
-#define		F_DRCS1A			0x141		// GƒZƒbƒg‚ÌI’[•„†‚Æ”í‚ç‚È‚¢‚æ‚¤‚ÉŒë–‚‰»‚µ‚½
-#define		F_DRCS2A			0x142		// 1ƒoƒCƒgDRCS‚Ì‹UI’[•„†
+#define		F_DRCS1A			0x141		// Gã‚»ãƒƒãƒˆã®çµ‚ç«¯ç¬¦å·ã¨è¢«ã‚‰ãªã„ã‚ˆã†ã«èª¤é­”åŒ–ã—ãŸ
+#define		F_DRCS2A			0x142		// 1ãƒã‚¤ãƒˆDRCSã®å½çµ‚ç«¯ç¬¦å·
 #define		F_DRCS3A			0x143
 #define		F_DRCS4A			0x144
 #define		F_DRCS5A			0x145
@@ -66,12 +66,12 @@
 #define		F_DRCS15A			0x14f
 #define		F_MACROA			0x170
 
-#define		F_UNKNOWN			0x100		// “à•”ˆ——p‹UI’[•„†
+#define		F_UNKNOWN			0x100		// å†…éƒ¨å‡¦ç†ç”¨å½çµ‚ç«¯ç¬¦å·
 #define		F_CONTROL			0x101
 #define		F_KANACOMMON		0x102
 #define		F_NULL				0x00
 
-#define		C_HALF_CONTROL		0x01010000	// “à•”ˆ——p‹UI’[•„†
+#define		C_HALF_CONTROL		0x01010000	// å†…éƒ¨å‡¦ç†ç”¨å½çµ‚ç«¯ç¬¦å·
 #define		C_HALF_ALPHA		0x004A0000
 #define		C_HALF_KANJI		0x00420000
 #define		C_HALF_HIRAGANA		0x00300000
@@ -161,7 +161,7 @@
 #define		COST_2GSET_TO_G3				4
 
 
-// \‘¢‘ÌéŒ¾
+// æ§‹é€ ä½“å®£è¨€
 
 typedef struct {
 	int32_t						region[2];
@@ -216,7 +216,7 @@ typedef struct BankRouteSelection {
 } BankRouteSelection;
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 size_t		conv_to_unicode(char16_t*, const size_t, const uint8_t*, const size_t, const bool, const bool);
 size_t		conv_to_unicode(uint8_t*, const size_t, const uint8_t*, const size_t, const bool, const bool);

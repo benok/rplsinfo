@@ -15,14 +15,14 @@
 #include "convToUnicode.h"
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		CONVBUFSIZE				65536
 
 #define		__USE_UTF_CODE_CRLF__
 
 
-// ƒ}ƒNƒ’è‹`
+// ãƒã‚¯ãƒ­å®šç¾©
 
 #define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
@@ -37,21 +37,21 @@ bool readTsProgInfo(HANDLE hFile, ProgInfo *proginfo, const int32_t psize, const
 
 	const int32_t	tstype = getSitEit(hFile, psibuf, psize, param->tsfilepos, param->packet_limit);
 
-	if (tstype == PID_SIT) {																	// SIT‚ğ—L‚·‚éTS‚¾‚Á‚½ê‡
+	if (tstype == PID_SIT) {																	// SITã‚’æœ‰ã™ã‚‹TSã ã£ãŸå ´åˆ
 		parseSit(psibuf, proginfo, param);
 	}
-	else if (tstype == PID_EIT) {																// EIT‚ğ—L‚·‚éTS‚¾‚Á‚½ê‡
+	else if (tstype == PID_EIT) {																// EITã‚’æœ‰ã™ã‚‹TSã ã£ãŸå ´åˆ
 		const int32_t serviceid = parseEit(psibuf, proginfo, param);
 		if (getSdt(hFile, psibuf, psize, serviceid, param->tsfilepos, param->packet_limit)) parseSdt(psibuf, proginfo, serviceid, param);
 	}
 	else {
-		return false;																			// ”Ô‘gî•ñ(SIT, EIT)‚ğŒŸo‚Å‚«‚È‚©‚Á‚½ê‡
+		return false;																			// ç•ªçµ„æƒ…å ±(SIT, EIT)ã‚’æ¤œå‡ºã§ããªã‹ã£ãŸå ´åˆ
 	}
 
-	proginfo->rectimezone = 18;																	// TSƒtƒ@ƒCƒ‹ƒ\[ƒX‚Å‚Í“à—e‚ÉŠÖŒW‚È‚­ƒ^ƒCƒ€ƒ][ƒ“18
-	proginfo->makerid     = 0;																	// ƒ[ƒJ[ID ‚Í 0
-	proginfo->modelcode   = 0;																	//  ‹@íƒR[ƒh‚Í 0 
-	proginfo->recsrc      = -1;																	//•ú‘—í•Êî•ñ–³‚µ
+	proginfo->rectimezone = 18;																	// TSãƒ•ã‚¡ã‚¤ãƒ«ã‚½ãƒ¼ã‚¹ã§ã¯å†…å®¹ã«é–¢ä¿‚ãªãã‚¿ã‚¤ãƒ ã‚¾ãƒ¼ãƒ³18
+	proginfo->makerid     = 0;																	// ãƒ¡ãƒ¼ã‚«ãƒ¼ID ã¯ 0
+	proginfo->modelcode   = 0;																	//  æ©Ÿç¨®ã‚³ãƒ¼ãƒ‰ã¯ 0 
+	proginfo->recsrc      = -1;																	//æ”¾é€ç¨®åˆ¥æƒ…å ±ç„¡ã—
 
 	return true;
 }
@@ -96,14 +96,14 @@ int32_t getSitEit(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int3
 		{
 			const bool		bPsiTop = isPsiTop(buf);
 			const int32_t	adaplen = getAdapFieldLength(buf);
-			const int32_t	pflen = getPointerFieldLength(buf);				// !bPsiTop‚Èê‡‚Í–³ˆÓ–¡‚È’l
+			const int32_t	pflen = getPointerFieldLength(buf);				// !bPsiTopãªå ´åˆã¯ç„¡æ„å‘³ãªå€¤
 
 			int32_t	len;
 			bool	bTop = false;
 			bool	bFirstSection = true;
 			int32_t	i = adaplen + 4;
 
-			while (i < 188)														// 188ƒoƒCƒgƒpƒPƒbƒg“à‚Å‚ÌŠeƒZƒNƒVƒ‡ƒ“‚Ìƒ‹[ƒv
+			while (i < 188)														// 188ãƒã‚¤ãƒˆãƒ‘ã‚±ãƒƒãƒˆå†…ã§ã®å„ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒ«ãƒ¼ãƒ—
 			{
 				if (!bPsiTop) {
 					len = 188 - i;
@@ -120,13 +120,13 @@ int32_t getSitEit(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int3
 						i++;
 						bFirstSection = false;
 					}
-					if (buf[i] == 0xFF) break;									// TableID‚Ì‚ ‚é‚×‚«êŠ‚ª0xFF(stuffing byte)‚È‚ç‚»‚ÌƒpƒPƒbƒg‚ÉŠÖ‚·‚éˆ—‚ÍI—¹
-					len = getSectionLength(buf + i) + 3;						// ƒZƒNƒVƒ‡ƒ“ƒwƒbƒ_‚ÍƒpƒPƒbƒg‚É‚Ü‚½‚ª‚Á‚Ä”z’u‚³‚ê‚é‚±‚Æ‚Í–³‚¢‚Í‚¸‚È‚Ì‚ÅƒpƒPƒbƒg”ÍˆÍŠO(188ƒoƒCƒgˆÈ~)‚ğ“Ç‚İ‚És‚­‚±‚Æ‚Í–³‚¢‚Í‚¸D
+					if (buf[i] == 0xFF) break;									// TableIDã®ã‚ã‚‹ã¹ãå ´æ‰€ãŒ0xFF(stuffing byte)ãªã‚‰ãã®ãƒ‘ã‚±ãƒƒãƒˆã«é–¢ã™ã‚‹å‡¦ç†ã¯çµ‚äº†
+					len = getSectionLength(buf + i) + 3;						// ã‚»ã‚¯ã‚·ãƒ§ãƒ³ãƒ˜ãƒƒãƒ€ã¯ãƒ‘ã‚±ãƒƒãƒˆã«ã¾ãŸãŒã£ã¦é…ç½®ã•ã‚Œã‚‹ã“ã¨ã¯ç„¡ã„ã¯ãšãªã®ã§ãƒ‘ã‚±ãƒƒãƒˆç¯„å›²å¤–(188ãƒã‚¤ãƒˆä»¥é™)ã‚’èª­ã¿ã«è¡Œãã“ã¨ã¯ç„¡ã„ã¯ãšï¼
 					if (i + len > 188) len = 188 - i;
 					bTop = true;
 				}
 
-				// SIT‚ÉŠÖ‚·‚éˆ—
+				// SITã«é–¢ã™ã‚‹å‡¦ç†
 
 				if (pid == PID_SIT) {
 					if (bSitStarted && !bTop) {
@@ -151,7 +151,7 @@ int32_t getSitEit(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int3
 					}
 				}
 
-				// EIT‚ÉŠÖ‚·‚éˆ—
+				// EITã«é–¢ã™ã‚‹å‡¦ç†
 
 				if (pid == PID_EIT) {
 					if (bEitStarted && !bTop) {
@@ -177,7 +177,7 @@ int32_t getSitEit(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int3
 					}
 				}
 
-				// PAT‚ÉŠÖ‚·‚éˆ—
+				// PATã«é–¢ã™ã‚‹å‡¦ç†
 
 				if ((pid == PID_PAT) && !bPatFound) {
 					if (bPatStarted && !bTop) {
@@ -257,14 +257,14 @@ bool getSdt(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int32_t se
 		{
 			const bool		bPsiTop = isPsiTop(buf);
 			const int32_t	adaplen = getAdapFieldLength(buf);
-			const int32_t	pflen = getPointerFieldLength(buf);				// !bPsiTop‚Èê‡‚Í–³ˆÓ–¡‚È’l
+			const int32_t	pflen = getPointerFieldLength(buf);				// !bPsiTopãªå ´åˆã¯ç„¡æ„å‘³ãªå€¤
 
 			int32_t		len;
 			bool		bTop = false;
 			bool		bFirstSection = true;
 			int32_t		i = adaplen + 4;
 
-			while (i < 188)														// 188ƒoƒCƒgƒpƒPƒbƒg“à‚Å‚ÌŠeƒZƒNƒVƒ‡ƒ“‚Ìƒ‹[ƒv
+			while (i < 188)														// 188ãƒã‚¤ãƒˆãƒ‘ã‚±ãƒƒãƒˆå†…ã§ã®å„ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒ«ãƒ¼ãƒ—
 			{
 				if (!bPsiTop) {
 					len = 188 - i;
@@ -281,13 +281,13 @@ bool getSdt(HANDLE hFile, uint8_t *psibuf, const int32_t psize, const int32_t se
 						i++;
 						bFirstSection = false;
 					}
-					if (buf[i] == 0xFF) break;									// TableID‚Ì‚ ‚é‚×‚«êŠ‚ª0xFF(stuffing byte)‚È‚ç‚»‚ÌƒpƒPƒbƒg‚ÉŠÖ‚·‚éˆ—‚ÍI—¹
-					len = getSectionLength(buf + i) + 3;						// ƒZƒNƒVƒ‡ƒ“ƒwƒbƒ_‚ÍƒpƒPƒbƒg‚É‚Ü‚½‚ª‚Á‚Ä”z’u‚³‚ê‚é‚±‚Æ‚Í–³‚¢‚Í‚¸‚È‚Ì‚ÅƒpƒPƒbƒg”ÍˆÍŠO(188ƒoƒCƒgˆÈ~)‚ğ“Ç‚İ‚És‚­‚±‚Æ‚Í–³‚¢‚Í‚¸
+					if (buf[i] == 0xFF) break;									// TableIDã®ã‚ã‚‹ã¹ãå ´æ‰€ãŒ0xFF(stuffing byte)ãªã‚‰ãã®ãƒ‘ã‚±ãƒƒãƒˆã«é–¢ã™ã‚‹å‡¦ç†ã¯çµ‚äº†
+					len = getSectionLength(buf + i) + 3;						// ã‚»ã‚¯ã‚·ãƒ§ãƒ³ãƒ˜ãƒƒãƒ€ã¯ãƒ‘ã‚±ãƒƒãƒˆã«ã¾ãŸãŒã£ã¦é…ç½®ã•ã‚Œã‚‹ã“ã¨ã¯ç„¡ã„ã¯ãšãªã®ã§ãƒ‘ã‚±ãƒƒãƒˆç¯„å›²å¤–(188ãƒã‚¤ãƒˆä»¥é™)ã‚’èª­ã¿ã«è¡Œãã“ã¨ã¯ç„¡ã„ã¯ãš
 					if (i + len > 188) len = 188 - i;
 					bTop = true;
 				}
 
-				// SDT‚ÉŠÖ‚·‚éˆ—
+				// SDTã«é–¢ã™ã‚‹å‡¦ç†
 
 				if ((pid == PID_SDT) && !bSdtFound) {
 					if (bSdtStarted && !bTop) {
@@ -385,79 +385,79 @@ int comparefornidtable(const void *item1, const void *item2)
 
 int32_t getTbChannelNum(const int32_t networkID, const int32_t serviceID, int32_t remoconkey_id)
 {
-	static int32_t	nIDTable[] =																			// ƒlƒbƒgƒ[ƒN¯•Ê, ƒŠƒ‚ƒRƒ“ƒL[¯•Ê‚ÌŠÖŒW‚ÍAARIB TR-B14 ‚ğQÆ‚µ‚½D
+	static int32_t	nIDTable[] =																			// ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯è­˜åˆ¥, ãƒªãƒ¢ã‚³ãƒ³ã‚­ãƒ¼è­˜åˆ¥ã®é–¢ä¿‚ã¯ã€ARIB TR-B14 ã‚’å‚ç…§ã—ãŸï¼
 	{
-		0x7FE0, 1,	0x7FE1, 2,	0x7FE2, 4,	0x7FE3, 6,	0x7FE4, 8,	0x7FE5, 5,	0x7FE6, 7,	0x7FE8, 12,		// ŠÖ“ŒLˆæ
-		0x7FD1, 2,	0x7FD2, 4,	0x7FD3, 6,	0x7FD4, 8,	0x7FD5, 10,											// ‹ß‹ELˆæ
-		0x7FC1, 2,	0x7FC2, 1,	0x7FC3, 5,	0x7FC4, 6,	0x7FC5, 4,											// ’†‹Lˆæ			18‹Ç
+		0x7FE0, 1,	0x7FE1, 2,	0x7FE2, 4,	0x7FE3, 6,	0x7FE4, 8,	0x7FE5, 5,	0x7FE6, 7,	0x7FE8, 12,		// é–¢æ±åºƒåŸŸ
+		0x7FD1, 2,	0x7FD2, 4,	0x7FD3, 6,	0x7FD4, 8,	0x7FD5, 10,											// è¿‘ç•¿åºƒåŸŸ
+		0x7FC1, 2,	0x7FC2, 1,	0x7FC3, 5,	0x7FC4, 6,	0x7FC5, 4,											// ä¸­äº¬åºƒåŸŸ			18å±€
 
-		0x7FB2, 1,	0x7FB3, 5,	0x7FB4, 6,	0x7FB5, 8,	0x7FB6, 7,											// –kŠC“¹ˆæ
-		0x7FA2, 4,	0x7FA3, 5,	0x7FA4, 6,	0x7FA5, 7,	0x7FA6, 8,											// ‰ªRì
-		0x7F92, 8,	0x7F93, 6,	0x7F94, 1,																	// “‡ª’¹æ
-		0x7F50, 3,	0x7F51, 2,	0x7F52, 1,	0x7F53, 5,	0x7F54, 6,	0x7F55, 8,	0x7F56, 7,					// –kŠC“¹iD–yj	20‹Ç
+		0x7FB2, 1,	0x7FB3, 5,	0x7FB4, 6,	0x7FB5, 8,	0x7FB6, 7,											// åŒ—æµ·é“åŸŸ
+		0x7FA2, 4,	0x7FA3, 5,	0x7FA4, 6,	0x7FA5, 7,	0x7FA6, 8,											// å²¡å±±é¦™å·
+		0x7F92, 8,	0x7F93, 6,	0x7F94, 1,																	// å³¶æ ¹é³¥å–
+		0x7F50, 3,	0x7F51, 2,	0x7F52, 1,	0x7F53, 5,	0x7F54, 6,	0x7F55, 8,	0x7F56, 7,					// åŒ—æµ·é“ï¼ˆæœ­å¹Œï¼‰	20å±€
 
-		0x7F40, 3,	0x7F41, 2,	0x7F42, 1,	0x7F43, 5,	0x7F44, 6,	0x7F45, 8,	0x7F46, 7,					// –kŠC“¹i”ŸŠÙj
-		0x7F30, 3,	0x7F31, 2,	0x7F32, 1,	0x7F33, 5,	0x7F34, 6,	0x7F35, 8,	0x7F36, 7,					// –kŠC“¹iˆ®ìj
-		0x7F20, 3,	0x7F21, 2,	0x7F22, 1,	0x7F23, 5,	0x7F24, 6,	0x7F25, 8,	0x7F26, 7,					// –kŠC“¹i‘ÑLj	21‹Ç
+		0x7F40, 3,	0x7F41, 2,	0x7F42, 1,	0x7F43, 5,	0x7F44, 6,	0x7F45, 8,	0x7F46, 7,					// åŒ—æµ·é“ï¼ˆå‡½é¤¨ï¼‰
+		0x7F30, 3,	0x7F31, 2,	0x7F32, 1,	0x7F33, 5,	0x7F34, 6,	0x7F35, 8,	0x7F36, 7,					// åŒ—æµ·é“ï¼ˆæ—­å·ï¼‰
+		0x7F20, 3,	0x7F21, 2,	0x7F22, 1,	0x7F23, 5,	0x7F24, 6,	0x7F25, 8,	0x7F26, 7,					// åŒ—æµ·é“ï¼ˆå¸¯åºƒï¼‰	21å±€
 
-		0x7F10, 3,	0x7F11, 2,	0x7F12, 1,	0x7F13, 5,	0x7F14, 6,	0x7F15, 8,	0x7F16, 7,					// –kŠC“¹i‹ú˜Hj
-		0x7F00, 3,	0x7F01, 2,	0x7F02, 1,	0x7F03, 5,	0x7F04, 6,	0x7F05, 8,	0x7F06, 7,					// –kŠC“¹i–kŒ©j
-		0x7EF0, 3,	0x7EF1, 2,	0x7EF2, 1,	0x7EF3, 5,	0x7EF4, 6,	0x7EF5, 8,	0x7EF6, 7,					// –kŠC“¹iº—–j
-		0x7EE0, 3,	0x7EE1, 2,	0x7EE2, 1,	0x7EE3, 8,	0x7EE4, 4,	0x7EE5, 5,								// ‹{é				27‹Ç
+		0x7F10, 3,	0x7F11, 2,	0x7F12, 1,	0x7F13, 5,	0x7F14, 6,	0x7F15, 8,	0x7F16, 7,					// åŒ—æµ·é“ï¼ˆé‡§è·¯ï¼‰
+		0x7F00, 3,	0x7F01, 2,	0x7F02, 1,	0x7F03, 5,	0x7F04, 6,	0x7F05, 8,	0x7F06, 7,					// åŒ—æµ·é“ï¼ˆåŒ—è¦‹ï¼‰
+		0x7EF0, 3,	0x7EF1, 2,	0x7EF2, 1,	0x7EF3, 5,	0x7EF4, 6,	0x7EF5, 8,	0x7EF6, 7,					// åŒ—æµ·é“ï¼ˆå®¤è˜­ï¼‰
+		0x7EE0, 3,	0x7EE1, 2,	0x7EE2, 1,	0x7EE3, 8,	0x7EE4, 4,	0x7EE5, 5,								// å®®åŸ				27å±€
 
-		0x7ED0, 1,	0x7ED1, 2,	0x7ED2, 4,	0x7ED3, 8,	0x7ED4, 5,											// H“c
-		0x7EC0, 1,	0x7EC1, 2,	0x7EC2, 4,	0x7EC3, 5,	0x7EC4, 6,	0x7EC5, 8,								// RŒ`
-		0x7EB0, 1,	0x7EB1, 2,	0x7EB2, 6,	0x7EB3, 4,	0x7EB4, 8,	0x7EB5, 5,								// Šâè
-		0x7EA0, 1,	0x7EA1, 2,	0x7EA2, 8,	0x7EA3, 4,	0x7EA4, 5,	0x7EA5, 6,								// •Ÿ“‡				23‹Ç
+		0x7ED0, 1,	0x7ED1, 2,	0x7ED2, 4,	0x7ED3, 8,	0x7ED4, 5,											// ç§‹ç”°
+		0x7EC0, 1,	0x7EC1, 2,	0x7EC2, 4,	0x7EC3, 5,	0x7EC4, 6,	0x7EC5, 8,								// å±±å½¢
+		0x7EB0, 1,	0x7EB1, 2,	0x7EB2, 6,	0x7EB3, 4,	0x7EB4, 8,	0x7EB5, 5,								// å²©æ‰‹
+		0x7EA0, 1,	0x7EA1, 2,	0x7EA2, 8,	0x7EA3, 4,	0x7EA4, 5,	0x7EA5, 6,								// ç¦å³¶				23å±€
 
-		0x7E90, 3,	0x7E91, 2,	0x7E92, 1,	0x7E93, 6,	0x7E94, 5,											// ÂX
-		0x7E87, 9,																							// “Œ‹
-		0x7E77, 3,																							// _“Şì
-		0x7E60, 1, 0x7E67, 3,																				// ŒQ”n
-		0x7E50, 1,																							// ˆïé
-		0x7E47, 3,																							// ç—t
-		0x7E30, 1, 0x7E37, 3,																				// “È–Ø
-		0x7E27, 3,																							// é‹Ê
-		0x7E10, 1,	0x7E11, 2,	0x7E12, 4,	0x7E13, 5,	0x7E14, 6,	0x7E15, 8,								// ’·–ì
-		0x7E00, 1,	0x7E01, 2,	0x7E02, 6,	0x7E03, 8,	0x7E04, 4,	0x7E05, 5,								// VŠƒ
-		0x7DF0, 1,	0x7DF1, 2,	0x7DF2, 4,	0x7DF3, 6,														// R—œ				28 + 2‹Ç
+		0x7E90, 3,	0x7E91, 2,	0x7E92, 1,	0x7E93, 6,	0x7E94, 5,											// é’æ£®
+		0x7E87, 9,																							// æ±äº¬
+		0x7E77, 3,																							// ç¥å¥ˆå·
+		0x7E60, 1, 0x7E67, 3,																				// ç¾¤é¦¬
+		0x7E50, 1,																							// èŒ¨åŸ
+		0x7E47, 3,																							// åƒè‘‰
+		0x7E30, 1, 0x7E37, 3,																				// æ ƒæœ¨
+		0x7E27, 3,																							// åŸ¼ç‰
+		0x7E10, 1,	0x7E11, 2,	0x7E12, 4,	0x7E13, 5,	0x7E14, 6,	0x7E15, 8,								// é•·é‡
+		0x7E00, 1,	0x7E01, 2,	0x7E02, 6,	0x7E03, 8,	0x7E04, 4,	0x7E05, 5,								// æ–°æ½Ÿ
+		0x7DF0, 1,	0x7DF1, 2,	0x7DF2, 4,	0x7DF3, 6,														// å±±æ¢¨				28 + 2å±€
 
-		0x7DE0, 3,	0x7DE6, 10,																				// ˆ¤’m
-		0x7DD0, 1,	0x7DD1, 2,	0x7DD2, 4,	0x7DD3, 5,	0x7DD4, 6,	0x7DD5, 8,								// Îì
-		0x7DC0, 1,	0x7DC1, 2,	0x7DC2, 6,	0x7DC3, 8,	0x7DC4, 4,	0x7DC5, 5,								// Ã‰ª
-		0x7DB0, 1,	0x7DB1, 2,	0x7DB2, 7,	0x7DB3, 8,														// •Ÿˆä
-		0x7DA0, 3,	0x7DA1, 2,	0x7DA2, 1,	0x7DA3, 8,	0x7DA4, 6,											// •xR
-		0x7D90, 3,	0x7D96, 7,																				// Od
-		0x7D80, 3,	0x7D86, 8,																				// Šò•Œ				27‹Ç
+		0x7DE0, 3,	0x7DE6, 10,																				// æ„›çŸ¥
+		0x7DD0, 1,	0x7DD1, 2,	0x7DD2, 4,	0x7DD3, 5,	0x7DD4, 6,	0x7DD5, 8,								// çŸ³å·
+		0x7DC0, 1,	0x7DC1, 2,	0x7DC2, 6,	0x7DC3, 8,	0x7DC4, 4,	0x7DC5, 5,								// é™å²¡
+		0x7DB0, 1,	0x7DB1, 2,	0x7DB2, 7,	0x7DB3, 8,														// ç¦äº•
+		0x7DA0, 3,	0x7DA1, 2,	0x7DA2, 1,	0x7DA3, 8,	0x7DA4, 6,											// å¯Œå±±
+		0x7D90, 3,	0x7D96, 7,																				// ä¸‰é‡
+		0x7D80, 3,	0x7D86, 8,																				// å²é˜œ				27å±€
 
-		0x7D70, 1,	0x7D76, 7,																				// ‘åã
-		0x7D60, 1,	0x7D66, 5,																				// ‹“s
-		0x7D50, 1,	0x7D56, 3,																				// •ºŒÉ
-		0x7D40, 1,	0x7D46, 5,																				// ˜a‰ÌR
-		0x7D30, 1,	0x7D36, 9,																				// “Ş—Ç
-		0x7D20, 1,	0x7D26, 3,																				//  ‰ê
-		0x7D10, 1,	0x7D11, 2,	0x7D12, 3,	0x7D13, 4,	0x7D14, 5,	0x7D15, 8,								// L“‡
-		0x7D00, 1,	0x7D01, 2,																				// ‰ªR
-		0x7CF0, 3,	0x7CF1, 2,																				// “‡ª
-		0x7CE0, 3,	0x7CE1, 2,																				// ’¹æ				24‹Ç
+		0x7D70, 1,	0x7D76, 7,																				// å¤§é˜ª
+		0x7D60, 1,	0x7D66, 5,																				// äº¬éƒ½
+		0x7D50, 1,	0x7D56, 3,																				// å…µåº«
+		0x7D40, 1,	0x7D46, 5,																				// å’Œæ­Œå±±
+		0x7D30, 1,	0x7D36, 9,																				// å¥ˆè‰¯
+		0x7D20, 1,	0x7D26, 3,																				// æ»‹è³€
+		0x7D10, 1,	0x7D11, 2,	0x7D12, 3,	0x7D13, 4,	0x7D14, 5,	0x7D15, 8,								// åºƒå³¶
+		0x7D00, 1,	0x7D01, 2,																				// å²¡å±±
+		0x7CF0, 3,	0x7CF1, 2,																				// å³¶æ ¹
+		0x7CE0, 3,	0x7CE1, 2,																				// é³¥å–				24å±€
 
-		0x7CD0, 1,	0x7CD1, 2,	0x7CD2, 4,	0x7CD3, 3,	0x7CD4, 5,											// RŒû
-		0x7CC0, 1,	0x7CC1, 2,	0x7CC2, 4,	0x7CC3, 5,	0x7CC4, 6,	0x7CC5, 8,								// ˆ¤•Q
-		0x7CB0, 1,	0x7CB1, 2,																				// ì
-		0x7CA0, 3,	0x7CA1, 2,	0x7CA2, 1,																	// “¿“‡
-		0x7C90, 1,	0x7C91, 2,	0x7C92, 4,	0x7C93, 6,	0x7C94, 8,											// ‚’m				21‹Ç
+		0x7CD0, 1,	0x7CD1, 2,	0x7CD2, 4,	0x7CD3, 3,	0x7CD4, 5,											// å±±å£
+		0x7CC0, 1,	0x7CC1, 2,	0x7CC2, 4,	0x7CC3, 5,	0x7CC4, 6,	0x7CC5, 8,								// æ„›åª›
+		0x7CB0, 1,	0x7CB1, 2,																				// é¦™å·
+		0x7CA0, 3,	0x7CA1, 2,	0x7CA2, 1,																	// å¾³å³¶
+		0x7C90, 1,	0x7C91, 2,	0x7C92, 4,	0x7C93, 6,	0x7C94, 8,											// é«˜çŸ¥				21å±€
 
-		0x7C80, 3,	0x7C81, 2,	0x7C82, 1,	0x7C83, 4,	0x7C84, 5,	0x7C85, 7,	0x7C86, 8,					// •Ÿ‰ª
-		0x7C70, 1,	0x7C71, 2,	0x7C72, 3,	0x7C73, 8,	0x7C74, 4,	0x7C75, 5,								// ŒF–{
-		0x7C60, 1,	0x7C61, 2,	0x7C62, 3,	0x7C63, 8,	0x7C64, 5,	0x7C65, 4,								// ’·è
-		0x7C50, 3,	0x7C51, 2,	0x7C52, 1,	0x7C53, 8,	0x7C54, 5,	0x7C55, 4,								// ­™“‡
-		0x7C40, 1,	0x7C41, 2,	0x7C42, 6,	0x7C43, 3,														// ‹{è				29‹Ç
+		0x7C80, 3,	0x7C81, 2,	0x7C82, 1,	0x7C83, 4,	0x7C84, 5,	0x7C85, 7,	0x7C86, 8,					// ç¦å²¡
+		0x7C70, 1,	0x7C71, 2,	0x7C72, 3,	0x7C73, 8,	0x7C74, 4,	0x7C75, 5,								// ç†Šæœ¬
+		0x7C60, 1,	0x7C61, 2,	0x7C62, 3,	0x7C63, 8,	0x7C64, 5,	0x7C65, 4,								// é•·å´
+		0x7C50, 3,	0x7C51, 2,	0x7C52, 1,	0x7C53, 8,	0x7C54, 5,	0x7C55, 4,								// é¹¿å…å³¶
+		0x7C40, 1,	0x7C41, 2,	0x7C42, 6,	0x7C43, 3,														// å®®å´				29å±€
 
-		0x7C30, 1,	0x7C31, 2,	0x7C32, 3,	0x7C33, 4,	0x7C34, 5,											// ‘å•ª
-		0x7C20, 1,	0x7C21, 2,	0x7C22, 3,																	// ²‰ê
-		0x7C10, 1,	0x7C11, 2,	0x7C12, 3,	0x7C14, 5,	0x7C17, 8,											// ‰«“ê				13‹Ç
+		0x7C30, 1,	0x7C31, 2,	0x7C32, 3,	0x7C33, 4,	0x7C34, 5,											// å¤§åˆ†
+		0x7C20, 1,	0x7C21, 2,	0x7C22, 3,																	// ä½è³€
+		0x7C10, 1,	0x7C11, 2,	0x7C12, 3,	0x7C14, 5,	0x7C17, 8,											// æ²–ç¸„				13å±€
 
-		0x7880, 3,	0x7881, 2,																				// •Ÿ‰ªiŒ§ˆæƒtƒ‰ƒOj	2‹Ç			Œv255‹Ç
+		0x7880, 3,	0x7881, 2,																				// ç¦å²¡ï¼ˆçœŒåŸŸãƒ•ãƒ©ã‚°ï¼‰	2å±€			è¨ˆ255å±€
 	};
 
 	static bool		bTableInit = false;
@@ -488,12 +488,12 @@ size_t my_memcpy_s(void* dst, const size_t bufsize, const void* src, const size_
 void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param)
 {
 
-	for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;			// ”Ô‘gƒWƒƒƒ“ƒ‹î•ñ‚ğƒNƒŠƒA‚µ‚Ä‚¨‚­
+	for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;			// ç•ªçµ„ã‚¸ãƒ£ãƒ³ãƒ«æƒ…å ±ã‚’ã‚¯ãƒªã‚¢ã—ã¦ãŠã
 
 	const int32_t	totallen = getSectionLength(sitbuf);
 	const int32_t	firstlen = getLength(sitbuf + 0x08);
 
-	// firstloopˆ—
+	// firstloopå‡¦ç†
 
 	int32_t			mediaType = MEDIATYPE_UNKNOWN;
 	int32_t			networkID = 0;
@@ -506,12 +506,12 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 	{
 		switch (sitbuf[i])
 		{
-		case 0xC2:													// ƒlƒbƒgƒ[ƒN¯•Ê‹Lqq
+		case 0xC2:													// ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯è­˜åˆ¥è¨˜è¿°å­
 			mediaType = sitbuf[i + 5] * 256 + sitbuf[i + 6];
 			networkID = sitbuf[i + 7] * 256 + sitbuf[i + 8];
 			i += (sitbuf[i + 1] + 2);
 			break;
-		case 0xCD:													// TSî•ñ‹Lqq
+		case 0xCD:													// TSæƒ…å ±è¨˜è¿°å­
 			remoconkey_id = sitbuf[i + 2];
 			i += (sitbuf[i + 1] + 2);
 			break;
@@ -521,9 +521,9 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 	}
 
 
-	// secondloopˆ—
+	// secondloopå‡¦ç†
 
-	if ((mediaType == MEDIATYPE_CS) && ((networkID == 0x0001) || (networkID == 0x0003)))		// ƒXƒJƒp[ PerfecTV & SKY ƒT[ƒrƒX (Œ»İ‚Íg‚í‚ê‚Ä‚¢‚È‚¢A‚Æv‚¤)
+	if ((mediaType == MEDIATYPE_CS) && ((networkID == 0x0001) || (networkID == 0x0003)))		// ã‚¹ã‚«ãƒ‘ãƒ¼ PerfecTV & SKY ã‚µãƒ¼ãƒ“ã‚¹ (ç¾åœ¨ã¯ä½¿ã‚ã‚Œã¦ã„ãªã„ã€ã¨æ€ã†)
 	{
 		while (i < totallen - 1)
 		{
@@ -532,7 +532,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 
 			i += 4;
 
-			proginfo->chnum = serviceID & 0x03FF;												// serviceID‚©‚çƒ`ƒƒƒ“ƒlƒ‹”Ô†‚ğæ“¾
+			proginfo->chnum = serviceID & 0x03FF;												// serviceIDã‹ã‚‰ãƒãƒ£ãƒ³ãƒãƒ«ç•ªå·ã‚’å–å¾—
 
 			const int32_t	j = i;
 
@@ -543,7 +543,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 			{
 				switch (sitbuf[i])
 				{
-					case 0xC3: {															// ƒp[ƒVƒƒƒ‹ƒgƒ‰ƒ“ƒXƒ|[ƒgƒXƒgƒŠ[ƒ€ƒ^ƒCƒ€‹Lqq
+					case 0xC3: {															// ãƒ‘ãƒ¼ã‚·ãƒ£ãƒ«ãƒˆãƒ©ãƒ³ã‚¹ãƒãƒ¼ãƒˆã‚¹ãƒˆãƒªãƒ¼ãƒ ã‚¿ã‚¤ãƒ è¨˜è¿°å­
 						const int32_t mjd = sitbuf[i + 3] * 256 + sitbuf[i + 4];
 						mjd_dec(mjd, &proginfo->recyear, &proginfo->recmonth, &proginfo->recday);
 						proginfo->rechour = (sitbuf[i + 5] >> 4) * 10 + (sitbuf[i + 5] & 0x0f);
@@ -557,7 +557,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 						i += (sitbuf[i + 1] + 2);
 						break;
 					}
-					case 0xB2:																// ‹Ç–¼‚Æ”Ô‘g–¼‚ÉŠÖ‚·‚é‹Lqq
+					case 0xB2:																// å±€åã¨ç•ªçµ„åã«é–¢ã™ã‚‹è¨˜è¿°å­
 						if (sitbuf[i + 3] == 0x01) {
 							const size_t	chnamelen = sitbuf[i + 2];
 							const size_t	pnamelen  = sitbuf[i + 3 + chnamelen];
@@ -566,7 +566,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 						}
 						i += (sitbuf[i + 1] + 2);
 						break;
-					case 0x83: {															// ”Ô‘gÚ×î•ñ‚ÉŠÖ‚·‚é‹Lqq
+					case 0x83: {															// ç•ªçµ„è©³ç´°æƒ…å ±ã«é–¢ã™ã‚‹è¨˜è¿°å­
 						int32_t len = sitbuf[i + 1] - 1;
 						if (len + pextendlen > LEN_PEXTEND) {
 							len = (LEN_PEXTEND - pextendlen > 0) ? LEN_PEXTEND - pextendlen : 0;
@@ -584,14 +584,14 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 			proginfo->pextendlen = (int32_t)conv_to_unicode((char16_t*)proginfo->pextend, CONVBUFSIZE, tempbuf, pextendlen, param->bCharSize, param->bIVS);
 		}
 	}
-	else // if( (mediaType == MEDIATYPE_BS) || (mediaType == MEDIATYPE_TB) || ( (mediaType == MEDIATYPE_CS) && (networkID == 0x000A) ) )		// ’nãƒfƒWƒ^ƒ‹, BSƒfƒWƒ^ƒ‹, (‹°‚ç‚­ƒXƒJƒp[HD‚à)
+	else // if( (mediaType == MEDIATYPE_BS) || (mediaType == MEDIATYPE_TB) || ( (mediaType == MEDIATYPE_CS) && (networkID == 0x000A) ) )		// åœ°ä¸Šãƒ‡ã‚¸ã‚¿ãƒ«, BSãƒ‡ã‚¸ã‚¿ãƒ«, (æã‚‰ãã‚¹ã‚«ãƒ‘ãƒ¼HDã‚‚)
 	{
 		uint8_t		tempbuf[CONVBUFSIZE] = { 0 };
 		int32_t		templen = 0;
 
 		while (i < totallen - 1)
 		{
-			serviceID = sitbuf[i] * 256 + sitbuf[i + 1];				// ƒT[ƒrƒXID
+			serviceID = sitbuf[i] * 256 + sitbuf[i + 1];				// ã‚µãƒ¼ãƒ“ã‚¹ID
 
 			const int32_t	secondlen = getLength(sitbuf + i + 2);
 
@@ -612,7 +612,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 			{
 				switch (sitbuf[i])
 				{
-					case 0xC3: {												// ƒp[ƒVƒƒƒ‹ƒgƒ‰ƒ“ƒXƒ|[ƒgƒXƒgƒŠ[ƒ€ƒ^ƒCƒ€‹Lqq
+					case 0xC3: {												// ãƒ‘ãƒ¼ã‚·ãƒ£ãƒ«ãƒˆãƒ©ãƒ³ã‚¹ãƒãƒ¼ãƒˆã‚¹ãƒˆãƒªãƒ¼ãƒ ã‚¿ã‚¤ãƒ è¨˜è¿°å­
 						const int32_t mjd = sitbuf[i + 3] * 256 + sitbuf[i + 4];
 						mjd_dec(mjd, &proginfo->recyear, &proginfo->recmonth, &proginfo->recday);
 						proginfo->rechour = (sitbuf[i + 5] >> 4) * 10 + (sitbuf[i + 5] & 0x0f);
@@ -626,7 +626,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 						i += (sitbuf[i + 1] + 2);
 						break;
 					}
-					case 0x54: {													// ƒRƒ“ƒeƒ“ƒg‹Lqq
+					case 0x54: {													// ã‚³ãƒ³ãƒ†ãƒ³ãƒˆè¨˜è¿°å­
 						int32_t numGenre = 0;
 						for (uint32_t n = 0; n < sitbuf[i + 1]; n += 2) {
 							if (((sitbuf[i + 2 + n] & 0xF0) != 0xE0) && (numGenre < 3)) {
@@ -637,14 +637,14 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 						i += (sitbuf[i + 1] + 2);
 						break;
 					}
-					case 0x48: {													// ƒT[ƒrƒX‹Lqq
+					case 0x48: {													// ã‚µãƒ¼ãƒ“ã‚¹è¨˜è¿°å­
 						const int32_t provnamelen = sitbuf[i + 3];
 						const int32_t servnamelen = sitbuf[i + 4 + provnamelen];
 						proginfo->chnamelen = (int32_t)conv_to_unicode((char16_t*)proginfo->chname, CONVBUFSIZE, sitbuf + i + 5 + provnamelen, servnamelen, param->bCharSize, param->bIVS);
 						i += (sitbuf[i + 1] + 2);
 						break;
 					}
-					case 0x4D: {													// ’ZŒ`®ƒCƒxƒ“ƒg‹Lqq
+					case 0x4D: {													// çŸ­å½¢å¼ã‚¤ãƒ™ãƒ³ãƒˆè¨˜è¿°å­
 						const int32_t prognamelen   = sitbuf[i + 5];
 						const int32_t progdetaillen = sitbuf[i + 6 + prognamelen];
 						proginfo->pnamelen   = (int32_t)conv_to_unicode((char16_t*)proginfo->pname, CONVBUFSIZE, sitbuf + i + 6, prognamelen, param->bCharSize, param->bIVS);
@@ -652,7 +652,7 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 						i += (sitbuf[i + 1] + 2);
 						break;
 					}
-					case 0x4E: {												// Šg’£Œ`®ƒCƒxƒ“ƒg‹Lqq
+					case 0x4E: {												// æ‹¡å¼µå½¢å¼ã‚¤ãƒ™ãƒ³ãƒˆè¨˜è¿°å­
 						const int32_t	itemlooplen = sitbuf[i + 6];
 						i += 7;
 						const int32_t	k = i;
@@ -700,17 +700,17 @@ void parseSit(const uint8_t *sitbuf, ProgInfo *proginfo, const CopyParams* param
 
 int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* param)
 {
-	for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;			// ”Ô‘gƒWƒƒƒ“ƒ‹î•ñ‚ğƒNƒŠƒA‚µ‚Ä‚¨‚­
-	for (int32_t i = 0; i < 8; i++) proginfo->audioformat[i] = -1;			// ‰¹ºî•ñ‚ğƒNƒŠƒA‚µ‚Ä‚¨‚­
+	for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;			// ç•ªçµ„ã‚¸ãƒ£ãƒ³ãƒ«æƒ…å ±ã‚’ã‚¯ãƒªã‚¢ã—ã¦ãŠã
+	for (int32_t i = 0; i < 8; i++) proginfo->audioformat[i] = -1;			// éŸ³å£°æƒ…å ±ã‚’ã‚¯ãƒªã‚¢ã—ã¦ãŠã
 
 	const int32_t 	totallen	= getSectionLength(eitbuf);
 	const int32_t	serviceID	= eitbuf[0x03] * 256 + eitbuf[0x04];
 	const int32_t	networkID	= eitbuf[0x0A] * 256 + eitbuf[0x0B];
 
-	proginfo->chnum = ((networkID >= 0x7880) && (networkID <= 0x7FE8)) ? getTbChannelNum(networkID, serviceID, 0) : serviceID & 0x03FF;	// ƒ`ƒƒƒ“ƒlƒ‹”Ô†‚Ìæ“¾
+	proginfo->chnum = ((networkID >= 0x7880) && (networkID <= 0x7FE8)) ? getTbChannelNum(networkID, serviceID, 0) : serviceID & 0x03FF;	// ãƒãƒ£ãƒ³ãƒãƒ«ç•ªå·ã®å–å¾—
 
 
-	// totalloopˆ—
+	// totalloopå‡¦ç†
 
 	int32_t		i = 0x0E;
 
@@ -734,7 +734,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 
 		i += 0x0C;
 
-		// secondloopˆ—
+		// secondloopå‡¦ç†
 
 		proginfo->pextendlen = 0;
 		templen = 0;
@@ -745,7 +745,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 		{
 			switch (eitbuf[i])
 			{
-				case 0x54: {												// ƒRƒ“ƒeƒ“ƒg‹Lqq
+				case 0x54: {												// ã‚³ãƒ³ãƒ†ãƒ³ãƒˆè¨˜è¿°å­
 					int32_t	numGenre = 0;
 					for (uint32_t n = 0; n < eitbuf[i + 1]; n += 2) {
 						if ((eitbuf[i + 2 + n] & 0xF0) != 0xE0) {
@@ -756,7 +756,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 					i += (eitbuf[i + 1] + 2);
 					break;
 				}
-				case 0x4D: {												// ’ZŒ`®ƒCƒxƒ“ƒg‹Lqq
+				case 0x4D: {												// çŸ­å½¢å¼ã‚¤ãƒ™ãƒ³ãƒˆè¨˜è¿°å­
 					const int32_t	prognamelen   = eitbuf[i + 5];
 					const int32_t	progdetaillen = eitbuf[i + 6 + prognamelen];
 					proginfo->pnamelen   = (int32_t)conv_to_unicode((char16_t*)proginfo->pname, CONVBUFSIZE, eitbuf + i + 6, prognamelen, param->bCharSize, param->bIVS);
@@ -764,7 +764,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 					i += (eitbuf[i + 1] + 2);
 					break;
 				}
-				case 0x4E: {												// Šg’£Œ`®ƒCƒxƒ“ƒg‹Lqq
+				case 0x4E: {												// æ‹¡å¼µå½¢å¼ã‚¤ãƒ™ãƒ³ãƒˆè¨˜è¿°å­
 					const int32_t	itemlooplen = eitbuf[i + 6];
 					i += 7;
 					const int32_t	k = i;
@@ -795,12 +795,12 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 					i += (iextlen + 1);
 					break;
 				}
-				case 0x50: {												// ƒRƒ“ƒ|[ƒlƒ“ƒg‹Lqq
+				case 0x50: {												// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆè¨˜è¿°å­
 					proginfo->videoformat = (eitbuf[i + 2] & 0x0F) * 256 + eitbuf[i + 3];
 					i += (eitbuf[i + 1] + 2);
 					break;
 				}
-				case 0xC4: {												// ‰¹ºƒRƒ“ƒ|[ƒlƒ“ƒg‹Lqq
+				case 0xC4: {												// éŸ³å£°ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆè¨˜è¿°å­
 					int32_t numAudio;
 					for (numAudio = 0; numAudio < 8; numAudio++) {
 						if (proginfo->audioformat[numAudio] == -1) break;
@@ -809,7 +809,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 					proginfo->audiosamplingrate[numAudio] = (eitbuf[i + 7] & 0x0E) >> 1;
 					my_memcpy_s(proginfo->audiolang[numAudio], 8, &eitbuf[i + 8], 3);
 					if (eitbuf[i + 7] & 0x80) {
-						proginfo->audiolang[numAudio][3] = '/'; // / ‚Å˜AŒ‹
+						proginfo->audiolang[numAudio][3] = '/'; // / ã§é€£çµ
 						my_memcpy_s(&proginfo->audiolang[numAudio][4], 8, &eitbuf[i + 11], 3);
 						proginfo->audiolang[numAudio][7] = '\0';
 					}
@@ -817,7 +817,7 @@ int32_t parseEit(const uint8_t *eitbuf, ProgInfo *proginfo, const CopyParams* pa
 					WCHAR sbuf[32];
 					if (eitbuf[i + 7] & 0x80) proginfo->audiotextlen[numAudio]   = (int32_t)conv_to_unicode((char16_t*)sbuf, CONVBUFSIZE, eitbuf + i + 14, eitbuf[i + 1] - 12, param->bCharSize, param->bIVS);
 					else proginfo->audiotextlen[numAudio]   = (int32_t)conv_to_unicode((char16_t*)sbuf, CONVBUFSIZE, eitbuf + i + 11, eitbuf[i + 1] - 9, param->bCharSize, param->bIVS);
-					// ‰üs‚ğ / ‚É•ÏŠ·
+					// æ”¹è¡Œã‚’ / ã«å¤‰æ›
 					size_t	dst = 0;
 					for (size_t src = 0; src < proginfo->audiotextlen[numAudio]; src++)
 					{
@@ -864,7 +864,7 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 			{
 				switch (sdtbuf[i])
 				{
-					case 0x48: {													// ƒT[ƒrƒX‹Lqq
+					case 0x48: {													// ã‚µãƒ¼ãƒ“ã‚¹è¨˜è¿°å­
 						const int32_t	provnamelen = sdtbuf[i + 3];
 						const int32_t	servnamelen = sdtbuf[i + 4 + provnamelen];
 						proginfo->chnamelen = (int32_t)conv_to_unicode((char16_t*)proginfo->chname, CONVBUFSIZE, sdtbuf + i + 5 + provnamelen, servnamelen, param->bCharSize, param->bIVS);
@@ -889,70 +889,70 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 {
 	const WCHAR	*str_genreL[] = {
-		L"ƒjƒ…[ƒX^•ñ“¹",			L"ƒXƒ|[ƒc",	L"î•ñ^ƒƒCƒhƒVƒ‡[",	L"ƒhƒ‰ƒ}",
-		L"‰¹Šy",					L"ƒoƒ‰ƒGƒeƒB",	L"‰f‰æ",				L"ƒAƒjƒ^“ÁB",
-		L"ƒhƒLƒ…ƒƒ“ƒ^ƒŠ[^‹³—{",	L"Œ€ê^Œö‰‰",	L"ï–¡^‹³ˆç",			L"•Ÿƒ",
-		L"—\”õ",					L"—\”õ",		L"Šg’£",				L"‚»‚Ì‘¼"
+		L"ãƒ‹ãƒ¥ãƒ¼ã‚¹ï¼å ±é“",			L"ã‚¹ãƒãƒ¼ãƒ„",	L"æƒ…å ±ï¼ãƒ¯ã‚¤ãƒ‰ã‚·ãƒ§ãƒ¼",	L"ãƒ‰ãƒ©ãƒ",
+		L"éŸ³æ¥½",					L"ãƒãƒ©ã‚¨ãƒ†ã‚£",	L"æ˜ ç”»",				L"ã‚¢ãƒ‹ãƒ¡ï¼ç‰¹æ’®",
+		L"ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ã‚¿ãƒªãƒ¼ï¼æ•™é¤Š",	L"åŠ‡å ´ï¼å…¬æ¼”",	L"è¶£å‘³ï¼æ•™è‚²",			L"ç¦ç¥‰",
+		L"äºˆå‚™",					L"äºˆå‚™",		L"æ‹¡å¼µ",				L"ãã®ä»–"
 	};
 
 	const WCHAR	*str_genreM[] = {
-		L"’èE‘‡", L"“V‹C", L"“ÁWEƒhƒLƒ…ƒƒ“ƒg", L"­¡E‘‰ï", L"ŒoÏEs‹µ", L"ŠCŠOE‘Û", L"‰ğà", L"“¢˜_E‰ï’k",
-		L"•ñ“¹“Á”Ô", L"ƒ[ƒJƒ‹E’nˆæ", L"Œğ’Ê", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"å®šæ™‚ãƒ»ç·åˆ", L"å¤©æ°—", L"ç‰¹é›†ãƒ»ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ", L"æ”¿æ²»ãƒ»å›½ä¼š", L"çµŒæ¸ˆãƒ»å¸‚æ³", L"æµ·å¤–ãƒ»å›½éš›", L"è§£èª¬", L"è¨è«–ãƒ»ä¼šè«‡",
+		L"å ±é“ç‰¹ç•ª", L"ãƒ­ãƒ¼ã‚«ãƒ«ãƒ»åœ°åŸŸ", L"äº¤é€š", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"ƒXƒ|[ƒcƒjƒ…[ƒX", L"–ì‹…", L"ƒTƒbƒJ[", L"ƒSƒ‹ƒt", L"‚»‚Ì‘¼‚Ì‹…‹Z", L"‘Š–oEŠi“¬‹Z", L"ƒIƒŠƒ“ƒsƒbƒNE‘Û‘å‰ï", L"ƒ}ƒ‰ƒ\ƒ“E—¤ãE…‰j",
-		L"ƒ‚[ƒ^[ƒXƒ|[ƒc", L"ƒ}ƒŠƒ“EƒEƒBƒ“ƒ^[ƒXƒ|[ƒc", L"‹£”nEŒö‰c‹£‹Z", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"ã‚¹ãƒãƒ¼ãƒ„ãƒ‹ãƒ¥ãƒ¼ã‚¹", L"é‡çƒ", L"ã‚µãƒƒã‚«ãƒ¼", L"ã‚´ãƒ«ãƒ•", L"ãã®ä»–ã®çƒæŠ€", L"ç›¸æ’²ãƒ»æ ¼é—˜æŠ€", L"ã‚ªãƒªãƒ³ãƒ”ãƒƒã‚¯ãƒ»å›½éš›å¤§ä¼š", L"ãƒãƒ©ã‚½ãƒ³ãƒ»é™¸ä¸Šãƒ»æ°´æ³³",
+		L"ãƒ¢ãƒ¼ã‚¿ãƒ¼ã‚¹ãƒãƒ¼ãƒ„", L"ãƒãƒªãƒ³ãƒ»ã‚¦ã‚£ãƒ³ã‚¿ãƒ¼ã‚¹ãƒãƒ¼ãƒ„", L"ç«¶é¦¬ãƒ»å…¬å–¶ç«¶æŠ€", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"Œ|”\EƒƒCƒhƒVƒ‡[", L"ƒtƒ@ƒbƒVƒ‡ƒ“", L"•é‚ç‚µEZ‚Ü‚¢", L"Œ’NEˆã—Ã", L"ƒVƒ‡ƒbƒsƒ“ƒOE’Ê”Ì", L"ƒOƒ‹ƒE—¿—", L"ƒCƒxƒ“ƒg", L"”Ô‘gĞ‰îE‚¨’m‚ç‚¹",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"èŠ¸èƒ½ãƒ»ãƒ¯ã‚¤ãƒ‰ã‚·ãƒ§ãƒ¼", L"ãƒ•ã‚¡ãƒƒã‚·ãƒ§ãƒ³", L"æš®ã‚‰ã—ãƒ»ä½ã¾ã„", L"å¥åº·ãƒ»åŒ»ç™‚", L"ã‚·ãƒ§ãƒƒãƒ”ãƒ³ã‚°ãƒ»é€šè²©", L"ã‚°ãƒ«ãƒ¡ãƒ»æ–™ç†", L"ã‚¤ãƒ™ãƒ³ãƒˆ", L"ç•ªçµ„ç´¹ä»‹ãƒ»ãŠçŸ¥ã‚‰ã›",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"‘“àƒhƒ‰ƒ}", L"ŠCŠOƒhƒ‰ƒ}", L"‘ãŒ€", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"å›½å†…ãƒ‰ãƒ©ãƒ", L"æµ·å¤–ãƒ‰ãƒ©ãƒ", L"æ™‚ä»£åŠ‡", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"‘“àƒƒbƒNEƒ|ƒbƒvƒX", L"ŠCŠOƒƒbƒNEƒ|ƒbƒvƒX", L"ƒNƒ‰ƒVƒbƒNEƒIƒyƒ‰", L"ƒWƒƒƒYEƒtƒ…[ƒWƒ‡ƒ“", L"‰Ì—w‹ÈE‰‰‰Ì", L"ƒ‰ƒCƒuEƒRƒ“ƒT[ƒg", L"ƒ‰ƒ“ƒLƒ“ƒOEƒŠƒNƒGƒXƒg", L"ƒJƒ‰ƒIƒPE‚Ì‚Ç©–",
-		L"–¯—wE–MŠy", L"“¶—wEƒLƒbƒY", L"–¯‘°‰¹ŠyEƒ[ƒ‹ƒhƒ~ƒ…[ƒWƒbƒN", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"å›½å†…ãƒ­ãƒƒã‚¯ãƒ»ãƒãƒƒãƒ—ã‚¹", L"æµ·å¤–ãƒ­ãƒƒã‚¯ãƒ»ãƒãƒƒãƒ—ã‚¹", L"ã‚¯ãƒ©ã‚·ãƒƒã‚¯ãƒ»ã‚ªãƒšãƒ©", L"ã‚¸ãƒ£ã‚ºãƒ»ãƒ•ãƒ¥ãƒ¼ã‚¸ãƒ§ãƒ³", L"æ­Œè¬¡æ›²ãƒ»æ¼”æ­Œ", L"ãƒ©ã‚¤ãƒ–ãƒ»ã‚³ãƒ³ã‚µãƒ¼ãƒˆ", L"ãƒ©ãƒ³ã‚­ãƒ³ã‚°ãƒ»ãƒªã‚¯ã‚¨ã‚¹ãƒˆ", L"ã‚«ãƒ©ã‚ªã‚±ãƒ»ã®ã©è‡ªæ…¢",
+		L"æ°‘è¬¡ãƒ»é‚¦æ¥½", L"ç«¥è¬¡ãƒ»ã‚­ãƒƒã‚º", L"æ°‘æ—éŸ³æ¥½ãƒ»ãƒ¯ãƒ¼ãƒ«ãƒ‰ãƒŸãƒ¥ãƒ¼ã‚¸ãƒƒã‚¯", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"ƒNƒCƒY", L"ƒQ[ƒ€", L"ƒg[ƒNƒoƒ‰ƒGƒeƒB", L"‚¨Î‚¢EƒRƒƒfƒB", L"‰¹Šyƒoƒ‰ƒGƒeƒB", L"—·ƒoƒ‰ƒGƒeƒB", L"—¿—ƒoƒ‰ƒGƒeƒB", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"ã‚¯ã‚¤ã‚º", L"ã‚²ãƒ¼ãƒ ", L"ãƒˆãƒ¼ã‚¯ãƒãƒ©ã‚¨ãƒ†ã‚£", L"ãŠç¬‘ã„ãƒ»ã‚³ãƒ¡ãƒ‡ã‚£", L"éŸ³æ¥½ãƒãƒ©ã‚¨ãƒ†ã‚£", L"æ—…ãƒãƒ©ã‚¨ãƒ†ã‚£", L"æ–™ç†ãƒãƒ©ã‚¨ãƒ†ã‚£", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"—m‰æ", L"–M‰æ", L"ƒAƒjƒ", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"æ´‹ç”»", L"é‚¦ç”»", L"ã‚¢ãƒ‹ãƒ¡", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"‘“àƒAƒjƒ", L"ŠCŠOƒAƒjƒ", L"“ÁB", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"å›½å†…ã‚¢ãƒ‹ãƒ¡", L"æµ·å¤–ã‚¢ãƒ‹ãƒ¡", L"ç‰¹æ’®", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"Ğ‰ïE–", L"—ğjE‹Is", L"©‘RE“®•¨EŠÂ‹«", L"‰F’ˆE‰ÈŠwEˆãŠw", L"ƒJƒ‹ƒ`ƒƒ[E“`“Œ|”\", L"•¶ŠwE•¶Œ|", L"ƒXƒ|[ƒc", L"ƒhƒLƒ…ƒƒ“ƒ^ƒŠ[‘S”Ê",
-		L"ƒCƒ“ƒ^ƒrƒ…[E“¢˜_", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"ç¤¾ä¼šãƒ»æ™‚äº‹", L"æ­´å²ãƒ»ç´€è¡Œ", L"è‡ªç„¶ãƒ»å‹•ç‰©ãƒ»ç’°å¢ƒ", L"å®‡å®™ãƒ»ç§‘å­¦ãƒ»åŒ»å­¦", L"ã‚«ãƒ«ãƒãƒ£ãƒ¼ãƒ»ä¼çµ±èŠ¸èƒ½", L"æ–‡å­¦ãƒ»æ–‡èŠ¸", L"ã‚¹ãƒãƒ¼ãƒ„", L"ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ã‚¿ãƒªãƒ¼å…¨èˆ¬",
+		L"ã‚¤ãƒ³ã‚¿ãƒ“ãƒ¥ãƒ¼ãƒ»è¨è«–", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"Œ»‘ãŒ€EVŒ€", L"ƒ~ƒ…[ƒWƒJƒ‹", L"ƒ_ƒ“ƒXEƒoƒŒƒG", L"—ŒêE‰‰Œ|", L"‰Ì•‘ŠêEŒÃ“T", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
+		L"ç¾ä»£åŠ‡ãƒ»æ–°åŠ‡", L"ãƒŸãƒ¥ãƒ¼ã‚¸ã‚«ãƒ«", L"ãƒ€ãƒ³ã‚¹ãƒ»ãƒãƒ¬ã‚¨", L"è½èªãƒ»æ¼”èŠ¸", L"æ­Œèˆä¼ãƒ»å¤å…¸", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
-		L"—·E’Ş‚èEƒAƒEƒgƒhƒA", L"‰€Œ|EƒyƒbƒgEèŒ|", L"‰¹ŠyE”üpEHŒ|", L"ˆÍŒéE«Šû", L"–ƒEƒpƒ`ƒ“ƒR", L"ÔEƒI[ƒgƒoƒC", L"ƒRƒ“ƒsƒ…[ƒ^E‚s‚uƒQ[ƒ€", L"‰ï˜bEŒêŠw",
-		L"—c™E¬Šw¶", L"’†Šw¶E‚Z¶", L"‘åŠw¶EóŒ±", L"¶ŠU‹³ˆçE‘Ši", L"‹³ˆç–â‘è", L"-", L"-", L"‚»‚Ì‘¼",
+		L"æ—…ãƒ»é‡£ã‚Šãƒ»ã‚¢ã‚¦ãƒˆãƒ‰ã‚¢", L"åœ’èŠ¸ãƒ»ãƒšãƒƒãƒˆãƒ»æ‰‹èŠ¸", L"éŸ³æ¥½ãƒ»ç¾è¡“ãƒ»å·¥èŠ¸", L"å›²ç¢ãƒ»å°†æ£‹", L"éº»é›€ãƒ»ãƒ‘ãƒãƒ³ã‚³", L"è»Šãƒ»ã‚ªãƒ¼ãƒˆãƒã‚¤", L"ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ»ï¼´ï¼¶ã‚²ãƒ¼ãƒ ", L"ä¼šè©±ãƒ»èªå­¦",
+		L"å¹¼å…ãƒ»å°å­¦ç”Ÿ", L"ä¸­å­¦ç”Ÿãƒ»é«˜æ ¡ç”Ÿ", L"å¤§å­¦ç”Ÿãƒ»å—é¨“", L"ç”Ÿæ¶¯æ•™è‚²ãƒ»è³‡æ ¼", L"æ•™è‚²å•é¡Œ", L"-", L"-", L"ãã®ä»–",
 
-		L"‚—îÒ", L"áŠQÒ", L"Ğ‰ï•Ÿƒ", L"ƒ{ƒ‰ƒ“ƒeƒBƒA", L"è˜b", L"•¶šiš–‹j", L"‰¹º‰ğà", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼",
-
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+		L"é«˜é½¢è€…", L"éšœå®³è€…", L"ç¤¾ä¼šç¦ç¥‰", L"ãƒœãƒ©ãƒ³ãƒ†ã‚£ã‚¢", L"æ‰‹è©±", L"æ–‡å­—ï¼ˆå­—å¹•ï¼‰", L"éŸ³å£°è§£èª¬", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–",
 
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 
-		L"BS/’nãƒfƒWƒ^ƒ‹•ú‘——p”Ô‘g•t‘®î•ñ", L"L‘ÑˆæCSƒfƒWƒ^ƒ‹•ú‘——pŠg’£", L"‰q¯ƒfƒWƒ^ƒ‹‰¹º•ú‘——pŠg’£", L"ƒT[ƒo[Œ^”Ô‘g•t‘®î•ñ", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+
+		L"BS/åœ°ä¸Šãƒ‡ã‚¸ã‚¿ãƒ«æ”¾é€ç”¨ç•ªçµ„ä»˜å±æƒ…å ±", L"åºƒå¸¯åŸŸCSãƒ‡ã‚¸ã‚¿ãƒ«æ”¾é€ç”¨æ‹¡å¼µ", L"è¡›æ˜Ÿãƒ‡ã‚¸ã‚¿ãƒ«éŸ³å£°æ”¾é€ç”¨æ‹¡å¼µ", L"ã‚µãƒ¼ãƒãƒ¼å‹ç•ªçµ„ä»˜å±æƒ…å ±", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"‚»‚Ì‘¼"
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"ãã®ä»–"
 	};
 
 	size_t	len;
 
 	if(genre[2] != -1) {
-		len =  swprintf_s(buf, bufsize, L"%s k%sl@%s k%sl@%s k%sl", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
+		len =  swprintf_s(buf, bufsize, L"%s ã€”%sã€•ã€€%s ã€”%sã€•ã€€%s ã€”%sã€•", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
 	} else if(genre[1] != -1) {
-		len =  swprintf_s(buf, bufsize, L"%s k%sl@%s k%sl", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]]);
+		len =  swprintf_s(buf, bufsize, L"%s ã€”%sã€•ã€€%s ã€”%sã€•", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]]);
 	} else if(genre[0] != -1) {
-		len =  swprintf_s(buf, bufsize, L"%s k%sl", str_genreL[genre[0] >> 4],  str_genreM[genre[0]]);
+		len =  swprintf_s(buf, bufsize, L"%s ã€”%sã€•", str_genreL[genre[0] >> 4],  str_genreM[genre[0]]);
 	} else {
 		len =  swprintf_s(buf, bufsize, L"n/a");
 	}
@@ -968,32 +968,32 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 	};
 
 	const WCHAR	*str_aspect[] = {
-		L"-", L"ƒAƒXƒyƒNƒg”ä4:3", L"ƒAƒXƒyƒNƒg”ä16:9 ƒpƒ“ƒxƒNƒgƒ‹‚ ‚è", L"ƒAƒXƒyƒNƒg”ä16:9 ƒpƒ“ƒxƒNƒgƒ‹‚È‚µ", L"ƒAƒXƒyƒNƒg”ä > 16:9"
+		L"-", L"ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”4:3", L"ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”16:9 ãƒ‘ãƒ³ãƒ™ã‚¯ãƒˆãƒ«ã‚ã‚Š", L"ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”16:9 ãƒ‘ãƒ³ãƒ™ã‚¯ãƒˆãƒ«ãªã—", L"ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯” > 16:9"
 	};
 
 	const WCHAR	*str_audio[] = {
-		L"-", L"1/0ƒ‚[ƒhiƒVƒ“ƒOƒ‹ƒ‚ƒmj", L"1/0{1/0ƒ‚[ƒhiƒfƒ…ƒAƒ‹ƒ‚ƒmj", L"2/0ƒ‚[ƒhiƒXƒeƒŒƒIj", L"2/1ƒ‚[ƒh", L"3/0ƒ‚[ƒh", L"2/2ƒ‚[ƒh", L"3/1ƒ‚[ƒh",
-		L"3/2ƒ‚[ƒh", L"3/2{LFEƒ‚[ƒhi3/2.1ƒ‚[ƒhj", L"3/3.1ƒ‚[ƒh", L"2/0/0-2/0/2-0.1ƒ‚[ƒh", L"5/2.1ƒ‚[ƒh", L"3/2/2.1ƒ‚[ƒh", L"2/0/0-3/0/2-0.1ƒ‚[ƒh", L"0/2/0-3/0/2-0.1ƒ‚[ƒh",
+		L"-", L"1/0ãƒ¢ãƒ¼ãƒ‰ï¼ˆã‚·ãƒ³ã‚°ãƒ«ãƒ¢ãƒï¼‰", L"1/0ï¼‹1/0ãƒ¢ãƒ¼ãƒ‰ï¼ˆãƒ‡ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒï¼‰", L"2/0ãƒ¢ãƒ¼ãƒ‰ï¼ˆã‚¹ãƒ†ãƒ¬ã‚ªï¼‰", L"2/1ãƒ¢ãƒ¼ãƒ‰", L"3/0ãƒ¢ãƒ¼ãƒ‰", L"2/2ãƒ¢ãƒ¼ãƒ‰", L"3/1ãƒ¢ãƒ¼ãƒ‰",
+		L"3/2ãƒ¢ãƒ¼ãƒ‰", L"3/2ï¼‹LFEãƒ¢ãƒ¼ãƒ‰ï¼ˆ3/2.1ãƒ¢ãƒ¼ãƒ‰ï¼‰", L"3/3.1ãƒ¢ãƒ¼ãƒ‰", L"2/0/0-2/0/2-0.1ãƒ¢ãƒ¼ãƒ‰", L"5/2.1ãƒ¢ãƒ¼ãƒ‰", L"3/2/2.1ãƒ¢ãƒ¼ãƒ‰", L"2/0/0-3/0/2-0.1ãƒ¢ãƒ¼ãƒ‰", L"0/2/0-3/0/2-0.1ãƒ¢ãƒ¼ãƒ‰",
 
-		L"2/0/0-3/2/3-0.2ƒ‚[ƒh", L"3/3/3-5/2/3-3/0/0.2ƒ‚[ƒh", L"-", L"-", L"-", L"-", L"-", L"-",
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
-
-		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+		L"2/0/0-3/2/3-0.2ãƒ¢ãƒ¼ãƒ‰", L"3/3/3-5/2/3-3/0/0.2ãƒ¢ãƒ¼ãƒ‰", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 
-		L"‹ŠoáŠQÒ—p‰¹º‰ğà", L"’®ŠoáŠQÒ—p‰¹º", L"-", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+
+		L"è¦–è¦šéšœå®³è€…ç”¨éŸ³å£°è§£èª¬", L"è´è¦šéšœå®³è€…ç”¨éŸ³å£°", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 	};
 
 	size_t	len;
 
 	if((format & 0xFF00) == 0x0100) {
-		len = swprintf_s(buf, bufsize, L"%sA%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
+		len = swprintf_s(buf, bufsize, L"%sã€%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
 	} else if((format & 0xFF00) == 0x0500) {
-		len = swprintf_s(buf, bufsize, L"H.264|MPEG-4 AVCA%sA%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
+		len = swprintf_s(buf, bufsize, L"H.264|MPEG-4 AVCã€%sã€%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
 	} else if((format & 0xFF00) == 0x0200) {
 		len = swprintf_s(buf, bufsize, L"%s", str_audio[format & 0x00FF]);
 	} else {

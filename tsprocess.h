@@ -7,13 +7,13 @@
 // #include "tsinout.h"
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define			READBUFSIZE				65536
 #define			READBUFMERGIN			1024
 
 
-// ƒfƒBƒXƒN“üo—Í—p
+// ãƒ‡ã‚£ã‚¹ã‚¯å…¥å‡ºåŠ›ç”¨
 
 typedef struct {
 	HANDLE			hFile;
@@ -27,7 +27,7 @@ typedef struct {
 } TsReadProcess;
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 int32_t			getPid(const uint8_t*);
 int32_t			getPidValue(const uint8_t*);

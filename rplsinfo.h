@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		F_FileName				1
 #define		F_FileNameFullPath		2
@@ -38,7 +38,7 @@
 #define		CONVBUFSIZE				65536
 
 
-// \‘¢‘ÌéŒ¾
+// æ§‹é€ ä½“å®£è¨€
 
 typedef struct {
 	int32_t		argSrc;
