@@ -1,7 +1,10 @@
 #pragma once
 
 #include <stdint.h>
-
+#ifdef __linux__
+typedef wchar_t _TCHAR;
+typedef int HANDLE;
+#endif
 
 // 定数など
 

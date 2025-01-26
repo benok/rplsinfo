@@ -1,13 +1,21 @@
 // rplsinfo.cpp : コンソール アプリケーションのエントリ ポイントを定義します。
 //
 
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+ #include "stdafx.h"
+ #include <windows.h>
+ #include <new.h>
+ #include "conio.h"
+#else
+ #include <wchar.h>
+ typedef wchar_t _TCHAR;
+ typedef int HANDLE;
+ #define swprintf_s swprintf
+ #include <stdlib.h>
+#endif
 #include <stdio.h>
 #include <string.h>
-#include <new.h>
 #include <locale.h>
-#include <wchar.h>
 
 #include "rplsinfo.h"
 #include "tsproginfo.h"
@@ -16,24 +24,30 @@
 #include "tsprocess.h"
 #include "convToUnicode.h"
 
-#include "conio.h"
 
 
 // 定数など
 
+#ifdef _WINDOWS
 #ifdef _WIN64
 #define		NAMESTRING				"\nrplsinfo version 1.5.2 (64bit)\n"
 #else
 #define		NAMESTRING				"\nrplsinfo version 1.5.2 (32bit)\n"
 #endif
-
+#else
+#define		NAMESTRING				"\nrplsinfo version 1.5.2 (linux)\n"
+#endif
 
 
 // マクロ定義
 
-#define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
+#ifdef _WINDOWS
+#define		printMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
-
+#else
+#define		printMsg(...)	printf(__VA_ARGS__)
+#define		printErrMsg(...)	fprintf(stderr, __VA_ARGS__)
+#endif
 
 // プロトタイプ宣言
 
@@ -46,7 +60,20 @@ void	outputProgInfo(HANDLE, const ProgInfo*, const CopyParams*);
 
 //
 
+#ifdef _WINDOWS
 int _tmain(int argc, _TCHAR* argv[])
+#else
+int _wtoi(wchar_t *str)
+{
+   long l;
+   wchar_t *stop;
+   l = wcstol(str, &stop, 0);
+   return (int)l;
+}
+#define _tsetlocale setlocale
+#define _T(x) x
+int main(int argc, wchar_t** argv)
+#endif
 {
 
 	_tsetlocale(LC_ALL, _T(""));

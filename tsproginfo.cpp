@@ -1,12 +1,21 @@
 // proginfo.cpp
 //
 
-
+#ifdef _WINDOWS
 #include "stdafx.h"
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
+
+#ifdef __linux__
+#include <wchar.h>
+typedef wchar_t _TCHAR;
+#define swprintf_s swprintf
+#endif
 
 #include "rplsinfo.h"
 #include "tsprocess.h"

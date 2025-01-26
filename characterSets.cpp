@@ -2,7 +2,11 @@
 // 文字集合の定義データ
 //
 
-#include "stdafx.h"
+#ifdef _WINDOWS
+ #include "stdafx.h"
+#else
+ #include <stdio.h>
+#endif
 
 #include "characterSets.h"
 #include "convToUnicode.h"

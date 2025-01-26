@@ -1,8 +1,13 @@
 // tsprocess.cpp
 //
 
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+ #include "stdafx.h"
+ #include <windows.h>
+#else
+ #include <stdint.h>
+ typedef int HANDLE;
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

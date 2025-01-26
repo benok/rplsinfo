@@ -1,5 +1,10 @@
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+# include "stdafx.h"
+# include <windows.h>
+#else // __linux__
+# include<stdlib.h>
+# include<ctype.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>

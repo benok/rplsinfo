@@ -2,6 +2,13 @@
 
 #include <stdint.h>
 
+#ifdef __linux__
+#include <wchar.h>
+typedef char _TCHAR;
+typedef char16_t WCHAR;
+typedef int HANDLE;
+#endif
+
 #include "rplsinfo.h"
 
 

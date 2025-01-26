@@ -1,8 +1,17 @@
 #pragma once
 
+#ifdef _WINDOWS
 #include <windows.h>
+#endif
 #include <stdint.h>
 
+#ifdef __linux__
+ typedef char16_t WCHAR;
+ typedef char CHAR;
+ typedef char _TCHAR;
+ #include <linux/limits.h>
+ #define _MAX_PATH PATH_MAX
+#endif
 
 // 定数など
 

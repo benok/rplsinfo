@@ -1,8 +1,13 @@
 // rplsproginfo.cpp
 //
 
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+ #include "stdafx.h"
+ #include <windows.h>
+#else
+ #include <stdlib.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
@@ -21,8 +26,13 @@
 
 // マクロ定義
 
+#ifdef _WINDOWS
 #define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
+#else
+#define     printMsg(...)           printf(__VA_ARGS__)
+#define     printErrMsg(...)        fprintf(stderr, __VA_ARGS__)
+#endif
 
 
 //

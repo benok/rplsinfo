@@ -1,6 +1,8 @@
 #pragma once
 
-#include <Windows.h>
+#ifdef _WINDOWS
+ #include <Windows.h>
+#endif
 
 #include <stdint.h>
 

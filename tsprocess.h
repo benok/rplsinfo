@@ -1,7 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
-#include <windows.h>
+#ifdef WINDOWS_
+# include "stdafx.h"
+# include <windows.h>
+#endif
 #include <stdint.h>
 
 // #include "tsinout.h"
