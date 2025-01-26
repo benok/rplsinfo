@@ -892,17 +892,29 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 	return;
 }
 
+#ifdef __linux__
+#define WCHAR char
+#define swprintf_s sprintf
+#endif
 
 size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 {
 	const WCHAR	*str_genreL[] = {
+#ifdef _WINDOWS
 		L"ニュース／報道",			L"スポーツ",	L"情報／ワイドショー",	L"ドラマ",
 		L"音楽",					L"バラエティ",	L"映画",				L"アニメ／特撮",
 		L"ドキュメンタリー／教養",	L"劇場／公演",	L"趣味／教育",			L"福祉",
 		L"予備",					L"予備",		L"拡張",				L"その他"
+#else
+		"ニュース／報道",		 "スポーツ",	"情報／ワイドショー",	"ドラマ",
+		"音楽",					"バラエティ",	"映画",				"アニメ／特撮",
+		"ドキュメンタリー／教養", "劇場／公演",	"趣味／教育",			"福祉",
+		"予備",					"予備",		"拡張",				"その他"
+#endif
 	};
 
 	const WCHAR	*str_genreM[] = {
+#ifdef _WINDOWS
 		L"定時・総合", L"天気", L"特集・ドキュメント", L"政治・国会", L"経済・市況", L"海外・国際", L"解説", L"討論・会談",
 		L"報道特番", L"ローカル・地域", L"交通", L"-", L"-", L"-", L"-", L"その他",
 
@@ -950,10 +962,60 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"その他"
+#else
+		"定時・総合", "天気", "特集・ドキュメント", "政治・国会", "経済・市況", "海外・国際", "解説", "討論・会談",
+		"報道特番", "ローカル・地域", "交通", "-", "-", "-", "-", "その他",
+
+		"スポーツニュース", "野球", "サッカー", "ゴルフ", "その他の球技", "相撲・格闘技", "オリンピック・国際大会", "マラソン・陸上・水泳",
+		"モータースポーツ", "マリン・ウィンタースポーツ", "競馬・公営競技", "-", "-", "-", "-", "その他",
+
+		"芸能・ワイドショー", "ファッション", "暮らし・住まい", "健康・医療", "ショッピング・通販", "グルメ・料理", "イベント", "番組紹介・お知らせ",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"国内ドラマ", "海外ドラマ", "時代劇", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"国内ロック・ポップス", "海外ロック・ポップス", "クラシック・オペラ", "ジャズ・フュージョン", "歌謡曲・演歌", "ライブ・コンサート", "ランキング・リクエスト", "カラオケ・のど自慢",
+		"民謡・邦楽", "童謡・キッズ", "民族音楽・ワールドミュージック", "-", "-", "-", "-", "その他",
+
+		"クイズ", "ゲーム", "トークバラエティ", "お笑い・コメディ", "音楽バラエティ", "旅バラエティ", "料理バラエティ", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"洋画", "邦画", "アニメ", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"国内アニメ", "海外アニメ", "特撮", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"社会・時事", "歴史・紀行", "自然・動物・環境", "宇宙・科学・医学", "カルチャー・伝統芸能", "文学・文芸", "スポーツ", "ドキュメンタリー全般",
+		"インタビュー・討論", "-", "-", "-", "-", "-", "-", "その他",
+
+		"現代劇・新劇", "ミュージカル", "ダンス・バレエ", "落語・演芸", "歌舞伎・古典", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"旅・釣り・アウトドア", "園芸・ペット・手芸", "音楽・美術・工芸", "囲碁・将棋", "麻雀・パチンコ", "車・オートバイ", "コンピュータ・ＴＶゲーム", "会話・語学",
+		"幼児・小学生", "中学生・高校生", "大学生・受験", "生涯教育・資格", "教育問題", "-", "-", "その他",
+
+		"高齢者", "障害者", "社会福祉", "ボランティア", "手話", "文字（字幕）", "音声解説", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他",
+
+		"-", "-", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"-", "-", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"BS/地上デジタル放送用番組付属情報", "広帯域CSデジタル放送用拡張", "衛星デジタル音声放送用拡張", "サーバー型番組付属情報", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"-", "-", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "その他"
+#endif
 	};
 
 	size_t	len;
 
+#ifdef _WINDOWS
 	if(genre[2] != -1) {
 		len =  swprintf_s(buf, bufsize, L"%s 〔%s〕　%s 〔%s〕　%s 〔%s〕", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
 	} else if(genre[1] != -1) {
@@ -963,22 +1025,42 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 	} else {
 		len =  swprintf_s(buf, bufsize, L"n/a");
 	}
-
+#else
+	if(genre[2] != -1) {
+		len =  sprintf(buf, "%s 〔%s〕　%s 〔%s〕　%s 〔%s〕", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
+	} else if(genre[1] != -1) {
+		len =  sprintf(buf, "%s 〔%s〕　%s 〔%s〕", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]]);
+	} else if(genre[0] != -1) {
+		len =  sprintf(buf, "%s 〔%s〕", str_genreL[genre[0] >> 4],  str_genreM[genre[0]]);
+	} else {
+		len =  sprintf(buf, "n/a");
+	}
+#endif
 	return len;
 }
 
 size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 {
 	const WCHAR	*str_resolution[] = {
+#ifdef _WINDOWS
 		L"480i(525i)", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"2160p", L"480i(525i)", L"1080i(1125i)", L"720p(750p)", L"240p", L"1080p(1125p)", L"-"
+#else
+		"480i(525i)", "-", "-", "-", "-", "-", "-", "-",
+		"-", "2160p", "480i(525i)", "1080i(1125i)", "720p(750p)", "240p", "1080p(1125p)", "-"
+#endif
 	};
 
 	const WCHAR	*str_aspect[] = {
+#ifdef _WINDOWS
 		L"-", L"アスペクト比4:3", L"アスペクト比16:9 パンベクトルあり", L"アスペクト比16:9 パンベクトルなし", L"アスペクト比 > 16:9"
+#else
+		"-", "アスペクト比4:3", "アスペクト比16:9 パンベクトルあり", "アスペクト比16:9 パンベクトルなし", "アスペクト比 > 16:9"
+#endif
 	};
 
 	const WCHAR	*str_audio[] = {
+#ifdef _WINDOWS
 		L"-", L"1/0モード（シングルモノ）", L"1/0＋1/0モード（デュアルモノ）", L"2/0モード（ステレオ）", L"2/1モード", L"3/0モード", L"2/2モード", L"3/1モード",
 		L"3/2モード", L"3/2＋LFEモード（3/2.1モード）", L"3/3.1モード", L"2/0/0-2/0/2-0.1モード", L"5/2.1モード", L"3/2/2.1モード", L"2/0/0-3/0/2-0.1モード", L"0/2/0-3/0/2-0.1モード",
 
@@ -993,8 +1075,25 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 
 		L"視覚障害者用音声解説", L"聴覚障害者用音声", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
+#else
+		"-", "1/0モード（シングルモノ）", "1/0＋1/0モード（デュアルモノ）", "2/0モード（ステレオ）", "2/1モード", "3/0モード", "2/2モード", "3/1モード",
+		"3/2モード", "3/2＋LFEモード（3/2.1モード）", "3/3.1モード", "2/0/0-2/0/2-0.1モード", "5/2.1モード", "3/2/2.1モード", "2/0/0-3/0/2-0.1モード", "0/2/0-3/0/2-0.1モード",
+
+		"2/0/0-3/2/3-0.2モード", "3/3/3-5/2/3-3/0/0.2モード", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"-", "-", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"-", "-", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+
+		"視覚障害者用音声解説", "聴覚障害者用音声", "-", "-", "-", "-", "-", "-",
+		"-", "-", "-", "-", "-", "-", "-", "-",
+#endif
 	};
 
+#ifdef _WINDOWS
 	size_t	len;
 
 	if((format & 0xFF00) == 0x0100) {
@@ -1006,6 +1105,19 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 	} else {
 		len =  swprintf_s(buf, bufsize, L"n/a");
 	}
+#else
+	size_t len;
+
+	if((format & 0xFF00) == 0x0100) {
+		len = sprintf(buf, "%s、%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
+	} else if((format & 0xFF00) == 0x0500) {
+		len = sprintf(buf, "H.264|MPEG-4 AVC、%s、%s", str_resolution[(format & 0x00F0) >> 4], str_aspect[format & 0x000F]);
+	} else if((format & 0xFF00) == 0x0200) {
+		len = sprintf(buf, "%s", str_audio[format & 0x00FF]);
+	} else {
+		len =  sprintf(buf,"n/a");
+	}
+#endif
 
 	return len;
 }
@@ -1013,8 +1125,21 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 size_t putSamplingrateStr(WCHAR *buf, const size_t bufsize, const int32_t samplingrate)
 {
 	const WCHAR	*str_samplingrate[] = {
+#ifdef _WINDOWS
 		L"-", L"16kHz", L"22.05kHz", L"24kHz", L"-", L"32kHz", L"44.1kHz", L"48kHz"
+#else
+		"-", "16kHz", "22.05kHz", "24kHz", "-", "32kHz", "44.1kHz", "48kHz"
+#endif
 	};
 
+#ifdef _WINDOWS
 	return swprintf_s(buf, bufsize, L"%s", str_samplingrate[samplingrate]);
+#else
+	return sprintf(buf, "%s", str_samplingrate[samplingrate]);
+#endif
 }
+
+#ifdef __linux__
+#undef WCHAR
+#undef swprintf_s
+#endif

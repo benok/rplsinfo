@@ -256,6 +256,11 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 	return true;
 }
 
+#ifdef __linux__
+#define WCHAR char
+#define swprintf_s sprintf
+#define wcscmp strcmp
+#endif
 
 int compareForRecSrcStr(const void *item1, const void *item2)
 {
@@ -267,6 +272,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 {
 	static const WCHAR	*nameList[] =
 	{
+#ifdef _WINDOWS
 		L"TD",		L"地上デジタル",
 		L"BD",		L"BSデジタル",
 		L"C1",		L"CSデジタル1",
@@ -277,6 +283,18 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 		L"DV",		L"DV入力",
 		L"TA",		L"地上アナログ",
 		L"NL",		L"ライン入力"
+#else
+		"TD",		"地上デジタル",
+		"BD",		"BSデジタル",
+		"C1",		"CSデジタル1",
+		"C2",		"CSデジタル2",
+		"iL",		"i.LINK(TS)",
+		"MV",		"AVCHD",
+		"SK",		"スカパー(DLNA)",
+		"DV",		"DV入力",
+		"TA",		"地上アナログ",
+		"NL",		"ライン入力"
+#endif
 	};
 
 	static bool		bTableInitialized = false;
@@ -289,8 +307,13 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	static const WCHAR	*errNameList[] =
 	{
+#ifdef _WINDOWS
 		L"unknown",
 		L"n/a"
+#else
+		"unknown",
+		"n/a"
+#endif
 	};
 
 	const WCHAR	*srcStr = errNameList[1];
@@ -323,3 +346,9 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	return i - 1;
 }
+
+#ifdef __linux__
+#undef WCHAR
+#undef L
+#undef swprintf_s
+#endif
