@@ -374,8 +374,13 @@ size_t convForCsv(WCHAR* dbuf, const size_t bufsize, const WCHAR* sbuf, const si
 
 void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* param)
 {
+#ifdef _WINDOWS
 	WCHAR		sstr[CONVBUFSIZE];
 	WCHAR		dstr[CONVBUFSIZE];
+#else
+	char		sstr[CONVBUFSIZE];
+	char16_t	dstr[CONVBUFSIZE];
+#endif
 
 	uint32_t	numWrite;
 	int32_t		i = 0;
@@ -389,34 +394,70 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		switch (param->flags[i])
 		{
 		case F_FileName:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイル名]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s%s", proginfo->fname, proginfo->fext);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[ファイル名]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s%s", proginfo->fname, proginfo->fext);
+#endif
 			break;
 		case F_FileNameFullPath:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[フルパスファイル名]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->fullpath);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[フルパスファイル名]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s", proginfo->fullpath);
+#endif
 			break;
 		case F_FileSize:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイルサイズ]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%lld", proginfo->fsize);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[ファイルサイズ]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%lld", proginfo->fsize);
+#endif
 			break;
 		case F_RecDate:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画日付]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.4d/%.2d/%.2d", proginfo->recyear, proginfo->recmonth, proginfo->recday);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画日付]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%.4d/%.2d/%.2d", proginfo->recyear, proginfo->recmonth, proginfo->recday);
+#endif
 			break;
 		case F_RecTime:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画時刻]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->rechour, proginfo->recmin, proginfo->recsec);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画時刻]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%.2d:%.2d:%.2d", proginfo->rechour, proginfo->recmin, proginfo->recsec);
+#endif
 			break;
 		case F_RecDuration:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画期間]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->durhour, proginfo->durmin, proginfo->dursec);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画期間]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%.2d:%.2d:%.2d", proginfo->durhour, proginfo->durmin, proginfo->dursec);
+#endif
 			break;
 		case F_RecTimeZone:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[タイムゾーン]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->rectimezone);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[タイムゾーン]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%d", proginfo->rectimezone);
+#endif
 			break;
 		case F_MakerID:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカーID]\r\n");
 			if (proginfo->makerid != -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->makerid);
@@ -424,8 +465,18 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			else {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
 			}
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[メーカーID]\r\n");
+			if (proginfo->makerid != -1) {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%d", proginfo->makerid);
+			}
+			else {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "n/a");
+			}
+#endif
 			break;
 		case F_ModelCode:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカー機種コード]\r\n");
 			if (proginfo->modelcode != -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->modelcode);
@@ -433,28 +484,63 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			else {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
 			}
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[メーカー機種コード]\r\n");
+			if (proginfo->modelcode != -1) {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%d", proginfo->modelcode);
+			}
+			else {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "n/a");
+			}
+#endif
 			break;
 		case F_RecSrc:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送種別]\r\n");
 			slen += getRecSrcStr(sstr + slen, CONVBUFSIZE - slen, proginfo->recsrc);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[放送種別]\r\n");
+			slen += getRecSrcStr(sstr + slen, CONVBUFSIZE - slen, proginfo->recsrc);
+#endif
 			break;
 		case F_ChannelNum:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[チャンネル番号]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.3dch", proginfo->chnum);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[チャンネル番号]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%.3dch", proginfo->chnum);
+#endif
 			break;
 		case F_ChannelName:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送局名]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->chname);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[放送局名]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s", u16tou8(proginfo->chname));
+#endif
 			break;
 		case F_ProgName:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組名]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pname);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組名]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s", u16tou8(proginfo->pname));
+#endif
 			break;
 		case F_ProgDetail:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組内容]\r\n");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pdetail);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組内容]\r\n");
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s", u16tou8(proginfo->pdetail));
+#endif
 			break;
 		case F_ProgExtend:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[内容詳細]\r\n");
 			if (proginfo->pextendlen == -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
@@ -462,16 +548,36 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			else {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pextend);
 			}
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[内容詳細]\r\n");
+			if (proginfo->pextendlen == -1) {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "n/a");
+			}
+			else {
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%s", u16tou8(proginfo->pextend));
+			}
+#endif
 			break;
 		case F_ProgGenre:
+#ifdef _WINDOWS
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組ジャンル]\r\n");
 			slen += putGenreStr(sstr + slen, CONVBUFSIZE - slen, proginfo->genre);
+#else
+			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組ジャンル]\r\n");
+			slen += putGenreStr(sstr + slen, CONVBUFSIZE - slen, proginfo->genre);
+#endif
 			break;
 		case F_ProgVideo:
+#ifdef _WINDOWS
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[映像]\r\n");
 			slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->videoformat);
+#else
+			if (param->bItemName) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "[映像]\r\n");
+			slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->videoformat);
+#endif
 			break;
 		case F_ProgAudio:
+#ifdef _WINDOWS
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[音声]\r\n");
 			for (int32_t audioNum = 0; audioNum < 8; audioNum++)
 			{
@@ -483,6 +589,19 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				if (proginfo->audiotextlen[audioNum] != 0) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L" %s", proginfo->audiotext[audioNum]);
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L" (%hs)", proginfo->audiolang[audioNum]);
 			}
+#else
+			if (param->bItemName) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "[音声]\r\n");
+			for (int32_t audioNum = 0; audioNum < 8; audioNum++)
+			{
+				if (proginfo->audioformat[audioNum] == -1) break;
+				if (audioNum != 0) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "\r\n");
+				slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->audioformat[audioNum]);
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " ");
+				slen += putSamplingrateStr(sstr + slen, CONVBUFSIZE - slen, proginfo->audiosamplingrate[audioNum]);
+				if (proginfo->audiotextlen[audioNum] != 0) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " %s", proginfo->audiotext[audioNum]);
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " (%hs)", proginfo->audiolang[audioNum]);
+			}
+#endif
 			break;
 		default:
 			slen += 0;
@@ -491,9 +610,13 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 
 
 		// 出力形式に応じてsstrを調整
-
+#ifdef _WINDOWS
 		size_t	dlen = convForCsv(dstr, CONVBUFSIZE - 5, sstr, slen, param);
-
+#else
+		size_t  u16slen;
+		WCHAR*  u16s = u8tou16(sstr, &u16slen);
+		size_t	dlen = convForCsv(dstr, CONVBUFSIZE - 5, u16s, u16slen, param);
+#endif
 
 		// セパレータに関する処理
 
@@ -503,13 +626,21 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			{
 			case S_NORMAL:
 			case S_CSV:
+#ifdef _WINDOWS
 				dstr[dlen++] = L',';								// COMMA
+#else
+				dstr[dlen++] = ',';									// COMMA
+#endif
 				break;
 			case S_TAB:
 				dstr[dlen++] = 0x0009;								// TAB
 				break;
 			case S_SPACE:
+#ifdef _WINDOWS
 				dstr[dlen++] = L' ';								// SPACE
+#else
+				dstr[dlen++] = ' ';									// SPACE
+#endif
 				break;
 			case S_NEWLINE:
 			case S_ITEMNAME:
@@ -536,11 +667,21 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		// データ出力
 
 		if (!param->bDisplay) {
+#ifdef _WINDOWS
 			WriteFileData(hFile, (uint8_t*)dstr, (uint32_t)dlen * sizeof(WCHAR), &numWrite);		// ディスク出力
+#else
+			size_t len;
+			char* u8 = u16tou8(dstr, &len);
+			WriteFileData(hFile, (uint8_t*)u8, len, &numWrite);										// ディスク出力
+#endif
 		}
 		else {
 			dstr[dlen] = 0x0000;
+#ifdef _WINDOWS
 			printMsg("%s", dstr);																	// コンソール出力
+#else
+			printMsg("%s", u16tou8(dstr));															// コンソール出力
+#endif
 		}
 
 		i++;
