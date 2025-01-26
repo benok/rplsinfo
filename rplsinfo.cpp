@@ -8,10 +8,15 @@
  #include "conio.h"
 #else
  #include <wchar.h>
- typedef wchar_t _TCHAR;
+ typedef char _TCHAR;
  typedef int HANDLE;
+ #define INVALID_HANDLE_VALUE -1
  #define swprintf_s swprintf
+ #define wcslen strlen
+ #define _wtoi atoi
  #include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -63,18 +68,13 @@ void	outputProgInfo(HANDLE, const ProgInfo*, const CopyParams*);
 #ifdef _WINDOWS
 int _tmain(int argc, _TCHAR* argv[])
 #else
-int _wtoi(wchar_t *str)
-{
-   long l;
-   wchar_t *stop;
-   l = wcstol(str, &stop, 0);
-   return (int)l;
-}
-#define _tsetlocale setlocale
-#define _T(x) x
-int main(int argc, wchar_t** argv)
+int main(int argc, _TCHAR** argv)
 #endif
 {
+#ifdef linux
+ #define _tsetlocale setlocale
+ #define _T(x) x
+#endif
 
 	_tsetlocale(LC_ALL, _T(""));
 
@@ -107,7 +107,11 @@ int main(int argc, wchar_t** argv)
 
 	if (!param.bDisplay)
 	{
+#ifdef _WINDOWS
 		hWriteFile = CreateFile(argv[param.argDest], GENERIC_WRITE | GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+#else
+		hWriteFile = open(argv[param.argDest], O_CREAT|O_TRUNC|O_RDWR, 0644);
+#endif
 		if (hWriteFile == INVALID_HANDLE_VALUE) {
 			printErrMsg("保存先ファイル %s を開けませんでした.\n", argv[param.argDest]);
 			exit(1);
@@ -133,7 +137,13 @@ int main(int argc, wchar_t** argv)
 
 	// 終了処理
 
-	if (!param.bDisplay) CloseHandle(hWriteFile);
+	if (!param.bDisplay) {
+#ifdef _WINDOWS
+		CloseHandle(hWriteFile);
+#else
+		close(hWriteFile);
+#endif
+	}
 
 	return 0;
 }

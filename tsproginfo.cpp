@@ -12,8 +12,6 @@
 #include <stdint.h>
 
 #ifdef __linux__
-#include <wchar.h>
-typedef wchar_t _TCHAR;
 #define swprintf_s swprintf
 #endif
 

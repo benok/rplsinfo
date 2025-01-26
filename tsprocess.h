@@ -3,6 +3,9 @@
 #ifdef WINDOWS_
 # include "stdafx.h"
 # include <windows.h>
+#else
+  typedef int HANDLE;
+  typedef int64_t LARGE_INTEGER;
 #endif
 #include <stdint.h>
 
@@ -50,7 +53,8 @@ int				getPcrPid(const uint8_t*);
 bool			isPcrData(const uint8_t*);
 int64_t			getPcrValue(const uint8_t*);
 
-int64_t			GetFileDataSize(HANDLE );
+int64_t			GetFileDataSize(HANDLE);
+
 void			SeekFileData(HANDLE, const int64_t);
 bool			ReadFileData(HANDLE, uint8_t *, const uint32_t, uint32_t *);
 bool			WriteFileData(HANDLE, const uint8_t *, const uint32_t, uint32_t *);

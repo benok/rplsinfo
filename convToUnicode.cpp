@@ -15,10 +15,13 @@
 
 
 //
-
+#ifdef _WINDOWS
 #ifdef _WIN32
   #define _SNPRINTF(x, len, ...) _snprintf_s(x, len, len - 1, __VA_ARGS__)
 #else
+  #define _SNPRINTF(x, len, ...) snprintf(x, len, __VA_ARGS__)
+#endif
+#else // linux
   #define _SNPRINTF(x, len, ...) snprintf(x, len, __VA_ARGS__)
 #endif
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _WINDOWS
-#include <windows.h>
+ #include <windows.h>
 #endif
 #include <stdint.h>
 
@@ -96,8 +96,8 @@ typedef struct {
 	CHAR		audiolang[8][8];
 	WCHAR		audiotext[8][32];
 	int32_t		audiotextlen[8];
-	WCHAR		fullpath[_MAX_PATH];
-	WCHAR		fname[_MAX_PATH];
-	WCHAR		fext[_MAX_PATH];
+	_TCHAR		fullpath[_MAX_PATH];
+	_TCHAR		fname[_MAX_PATH];
+	_TCHAR		fext[_MAX_PATH];
 	int64_t		fsize;
 } ProgInfo;

@@ -6,6 +6,9 @@
  #include <windows.h>
 #else
  #include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <libgen.h> //dirname, basename
 #endif
 
 #include <stdio.h>
@@ -39,28 +42,53 @@
 
 bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param)
 {
+#ifdef _WINDOWS
 	HANDLE	hFile = CreateFile(fname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
 	if (hFile == INVALID_HANDLE_VALUE) {
 		printErrMsg("番組情報元ファイル %s を開くのに失敗しました.\n", fname);
 		return	false;
 	}
-
+#else
+	int hFile = open(fname, O_RDONLY);
+	if (hFile == -1) {
+		printErrMsg("番組情報元ファイル %s を開くのに失敗しました.\n", fname);
+		return	false;
+	}
+#endif
 	const int32_t	srcfiletype = rplsTsCheck(hFile);
 
 	if ((srcfiletype != FILE_188TS) && (srcfiletype != FILE_192TS) && (srcfiletype != FILE_RPLS)) {										// 無効なファイルの場合
 		printErrMsg("番組情報元ファイル %s は有効なTS, rplsファイルではありません.\n", fname);
+#ifdef _WINDOWS
 		CloseHandle(hFile);
+#else
+        close(hFile);
+#endif
 		return	false;
 	}
 
 	// 番組情報の読み込み
-
+#ifdef _WINDOWS
 	_wfullpath(proginfo->fullpath, fname, _MAX_PATH);																	// フルパス名取得
 	_wsplitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);			// ベースファイル名と拡張子
-	
 	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
-
+#else
+    char *p;
+    p = realpath(fname, proginfo->fullpath);
+	char pathbuf[_MAX_PATH];
+	strncpy(pathbuf, p, _MAX_PATH);
+	p = basename(pathbuf);
+	char* pdot = strrchr(p, '.');
+	if (pdot && pdot!=p) {
+			strncpy(proginfo->fext, pdot, _MAX_PATH);
+			*pdot = '\0';
+	} else {
+			proginfo->fext[0] = '\0';
+	}
+	strncpy(proginfo->fname, p, _MAX_PATH);
+	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
+#endif
 	bool	bResult;
 
 	if (srcfiletype == FILE_RPLS) {
@@ -72,11 +100,18 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 
 	if (!bResult) {
 		printErrMsg("番組情報元ファイル %s から有効な番組情報を検出できませんでした.\n", fname);
+#ifdef _WINDOWS
 		CloseHandle(hFile);
+#else
+		close(hFile);
+#endif
 		return	false;
 	}
-
+#ifdef _WINDOWS
 	CloseHandle(hFile);
+#else
+	close(hFile);
+#endif
 
 	return	true;
 }

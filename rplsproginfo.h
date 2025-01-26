@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #ifdef __linux__
-typedef wchar_t _TCHAR;
+typedef char _TCHAR;
 typedef int HANDLE;
 #endif
 
