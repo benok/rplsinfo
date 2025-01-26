@@ -289,3 +289,7 @@ BankSet*	checkMojiSequenceUTF16(const char16_t *, const size_t, const ConvStatus
 BankSet*	checkMojiSequenceUTF8(const uint8_t *, const size_t, const ConvStatus *);
 BankSet*	checkMojiSequenceU32T(const uint32_t *, const size_t, const ConvStatus *);
 
+#ifdef __linux__
+char*       u16tou8(const char16_t *u16str, size_t* len = 0);
+char16_t*   u8tou16(const char *u8str, size_t* len = 0);
+#endif

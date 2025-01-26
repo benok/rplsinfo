@@ -5945,4 +5945,89 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	return bankSeq;
 }
 
+#ifdef __linux__
 
+#define CONVBUFSIZE 65536
+
+#include <iconv.h>
+#include <errno.h>
+
+// https://stackoverflow.com/a/14528742/26736
+int strlen16(const char16_t* strarg)
+{
+   if(!strarg)
+     return -1; //strarg is NULL pointer
+   char16_t* str = (char16_t*) strarg;
+   for(;*str;++str)
+     ; // empty body
+   return str-strarg;
+}
+
+char16_t* str16cpy(char16_t* destination, const char16_t* source)
+{
+    char16_t* temp = destination;
+    while((*temp++ = *source++) != 0)
+    ;
+    return destination;
+}
+
+char16_t u16_buf[CONVBUFSIZE / 2];
+char     u8_buf[CONVBUFSIZE];
+
+char* u16tou8(const char16_t *u16str, size_t* len)
+{
+	size_t n_in = strlen16(u16str) * 2;
+	str16cpy(u16_buf, u16str);
+	size_t n_out = CONVBUFSIZE;
+	char *in  = (char*)u16_buf;
+	char *out = u8_buf;
+	iconv_t ic = iconv_open("UTF-8", "UTF-16LE");
+	if (ic == (iconv_t)-1) {
+		fprintf(stderr, "iconv_open(): failed to open iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t rl = iconv(ic, &in, &n_in, &out, &n_out);
+	if (rl == -1) {
+		fprintf(stderr, "iconv(): failed to convert with iconv(%d)\n", errno);
+		return 0;
+	}
+	int rc = iconv_close(ic);
+	if (rc == -1) {
+		fprintf(stderr, "iconv_close(): failed to close iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t l = CONVBUFSIZE - n_out;
+	u8_buf[l] = '\0';
+	if (len) *len = l;
+	return u8_buf;
+}
+
+char16_t* u8tou16(const char *u8str, size_t* len)
+{
+	size_t n_in = strlen(u8str);
+	strcpy(u8_buf, u8str);
+	size_t n_out = CONVBUFSIZE;
+	char *in  = u8_buf;
+	char *out = (char*)u16_buf;
+	iconv_t ic = iconv_open("UTF-16LE", "UTF-8");
+	if (ic == (iconv_t)-1) {
+		fprintf(stderr, "iconv_open(): failed to open iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t rl = iconv(ic, &in, &n_in, &out, &n_out);
+	if (rl == -1) {
+		fprintf(stderr, "iconv(): failed to convert with iconv(%d)\n", errno);
+		return 0;
+	}
+	int rc = iconv_close(ic);
+	if (rc == -1) {
+		fprintf(stderr, "iconv_close(): failed to close iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t l = (CONVBUFSIZE - n_out) / 2;
+	u16_buf[l] = '\0';
+	if (len) *len = l;
+	return u16_buf;
+}
+
+#endif // __linux__
