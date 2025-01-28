@@ -1,6 +1,99 @@
 
 # rplsinfo
 
+## Linuxサポートについて
+
+Windows版の[rplsinfo (tsukumijima/rplsinfo)](https://github.com/tsukumijima/rplsinfo)をフォークして、簡易的にLinuxでも動作するように変更を加えたものです。
+
+### Linux版の動作について
+
+UTF-8環境で、手元のBDAVディスクのrplsファイルの情報取得が動作することを確認しました。
+(内部でlibiconvを使用していて、出力はUTF-8に変換されます。)
+
+あまりテストしていませんが、4GB以上のm2tsファイルからも、正しく情報取得できているようです。
+
+内部でiconvを使用してコード変換しているなどの理由から、もしかしたら、オリジナルのWindows版には無い文字化けなどが発生するかもしれません。
+
+### Linux版のビルドについて
+
+#### 環境
+
+- 環境: Debian 12 or Debian 11
+- 必要パッケージ: make, g++, libc6-dev
+
+#### 必要パッケージのインストール
+
+```sh
+apt update -y && apt install make g++ libc6-dev
+```
+
+#### ビルド
+
+```sh
+make config=release
+```
+
+bin/Release以下にrplsinfoが出力されます。
+
+### Dockerからの利用
+
+#### 使用方法
+
+下記のように、カレントディレクトリなどをWORKDIR(/app)にマウントして使います。
+
+```sh
+docker run --rm -v .:/app benok/rplsino:latest 00001.rpls -bi
+```
+
+作業ディレクトリをカレントディレクトリに限定して使用するので良ければ、下記の様なaliasを定義してしまうのも良いかもしれません。
+
+```sh
+alias rplsinfo='docker run --rm -v .:/app benok/rplsinfo:latest'
+```
+
+#### ローカルイメージのビルド
+
+ローカルでソースを変更した際などは、下記でビルドしてください。
+
+```sh
+docker build . -t benok/rplsinfo:latest
+```
+
+(使用方法は前述の通り。ローカルでビルドしたイメージが優先して使用されます。)
+
+### 変更したコードについて
+
+Windowsでもビルドできるように`#ifdef`でソースコードは分離していますが、ファイルエンコードをすべてUTF-8に変更しているため、`iconv(1)`などを使用して、同一コードをWindowsでビルドする際には、ソースファイルをUTF-16LEにエンコードし直す必要があります。
+
+ファイルを追加したり、premake5.luaファイルを変更した場合は、`premake5 gmake`を実行してMakefileを更新する必要があります(要[premake](https://premake.github.io/)インストール)。
+
+### 今後について
+
+#### 面倒なのでやらなそうなこと
+
+- 各種リテラル文字列がソースに埋め込まれているのを、別のリソースファイルに分離すると良いかも (ソースの文字コード変換は不要にできるけど、作業大変)
+- ifdefが辛いので、VC++でもUTF-8でビルドできるようにコードを整理してしまう手もあるかもしれない
+  - (のだが、WindowsのDTVツール群が既存のrplstools(=UTF-16)前提で作られていそうなので出力エンコーディングは切り替えできるようにしつつデフォルトをUTF-16にするのが良さそう)
+- `premake5 vs2022`で出力したslnファイルのビルドをWindowsから試す
+- mingwのgccでもビルドできるはずなので、めんどくさがらずにpremakeのconfigulationで、Linux/Windowsを分離したほうがベター
+
+#### もしかしたらやるかも
+
+- jqを使わずに直接JSON出力できたらうれしい
+- コマンドラインオプションが覚えられないのでヘルプがほしい
+
+### 謝辞
+
+rplsinfoの開発者の皆様、大変有用なツールを公開していただき、ありがとうございます。
+
+パナのBDレコーダーが故障して、大量にブルーレイにバックアップが必要になった際、もし、このツールがなければ、管理が地獄でした。
+
+本当にありがとうございます。
+
+### 以下、フォーク元の[tsukumijima/rplsinfo](https://github.com/tsukumijima/rplsinfo)のドキュメントになります
+
+----
+
 ## このリポジトリについて
 
 このリポジトリは、2018年8月頃まで Vesti La Giubba ([http://saysaysay.net/rplstool/rplsinfo](https://web.archive.org/web/20161126173554/http://saysaysay.net/rplstool/rplsinfo)) にて公開されていた、  
