@@ -1,9 +1,12 @@
 #pragma once
 
 #include <stdint.h>
+#ifdef __linux__
+typedef char _TCHAR;
+typedef int HANDLE;
+#endif
 
-
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		ADR_APPINFO				0x28
 #define		ADR_TIMEZONE			0x08
@@ -50,10 +53,19 @@
 
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 bool		readFileProgInfo(_TCHAR *, ProgInfo*, const CopyParams *);
 int32_t		rplsTsCheck(HANDLE);
 bool		rplsMakerCheck(const uint8_t *, const int32_t);
 bool		readRplsProgInfo(HANDLE, ProgInfo *, const CopyParams *);
+
+#ifdef __linux__
+#define WCHAR char
+#endif
 size_t		getRecSrcStr(WCHAR *, const size_t, const int32_t);
+#ifdef __linux__
+#undef WCHAR
+#endif
+
+

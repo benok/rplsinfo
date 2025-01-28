@@ -2,10 +2,17 @@
 
 #include <stdint.h>
 
+#ifdef __linux__
+#include <wchar.h>
+typedef char _TCHAR;
+typedef char16_t WCHAR;
+typedef int HANDLE;
+#endif
+
 #include "rplsinfo.h"
 
 
-// ’è”
+// å®šæ•°
 
 #define		MEDIATYPE_TB		0x5442
 #define		MEDIATYPE_BS		0x4253
@@ -30,7 +37,7 @@
 
 
 
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 
 bool			readTsProgInfo(HANDLE, ProgInfo *, const int32_t, const CopyParams*);
 
@@ -45,11 +52,18 @@ void			parseSit(const uint8_t*, ProgInfo*, const CopyParams*);
 int32_t			parseEit(const uint8_t*, ProgInfo*, const CopyParams*);
 void			parseSdt(const uint8_t*, ProgInfo*, const int32_t, const CopyParams*);
 
+#ifdef __linux__
+#define WCHAR char
+#ifndef swprintf_s
+# define swprintf_s sprintf
+#endif
+#endif
+
 size_t			putGenreStr(WCHAR *, const size_t, const int32_t *);
 size_t			putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format);
 size_t			putSamplingrateStr(WCHAR *, const size_t, const int32_t);
 
-
-
-
-
+#ifdef __linux__
+#undef WCHAR
+#undef swprintf_s
+#endif

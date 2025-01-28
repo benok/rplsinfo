@@ -1,5 +1,10 @@
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+# include "stdafx.h"
+# include <windows.h>
+#else // __linux__
+# include<stdlib.h>
+# include<ctype.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
@@ -10,10 +15,13 @@
 
 
 //
-
+#ifdef _WINDOWS
 #ifdef _WIN32
   #define _SNPRINTF(x, len, ...) _snprintf_s(x, len, len - 1, __VA_ARGS__)
 #else
+  #define _SNPRINTF(x, len, ...) snprintf(x, len, __VA_ARGS__)
+#endif
+#else // linux
   #define _SNPRINTF(x, len, ...) snprintf(x, len, __VA_ARGS__)
 #endif
 
@@ -47,25 +55,25 @@
 #define		UINT32TBUF(x,y)					dst+=writeU32TBuf(dbuf,maxbufsize,dst,x,y,&status)
 #define		WRITEBUF(x)						writeBuf(dbuf,maxbufsize,dst++,x)
 
-#define		__USE_UTF_CODE_CRLF__			// ƒ†ƒjƒR[ƒho—Í‚Ì‰üs‚É CR+LF ‚ğg—p‚·‚éB’è‹`‚µ‚È‚¯‚ê‚Î LF ‚Ì‚İ‚É‚È‚éB
-#define		__USE_8BITCODE_CR__				// 8’PˆÊ•„†o—Í‚Ì‰üsƒR[ƒh‚É0x0D‚ğg—p‚·‚éB’è‹`‚µ‚È‚¯‚ê‚Î0x0A‚ğg—p‚·‚é
+#define		__USE_UTF_CODE_CRLF__			// ãƒ¦ãƒ‹ã‚³ãƒ¼ãƒ‰å‡ºåŠ›ã®æ”¹è¡Œã« CR+LF ã‚’ä½¿ç”¨ã™ã‚‹ã€‚å®šç¾©ã—ãªã‘ã‚Œã° LF ã®ã¿ã«ãªã‚‹ã€‚
+#define		__USE_8BITCODE_CR__				// 8å˜ä½ç¬¦å·å‡ºåŠ›ã®æ”¹è¡Œã‚³ãƒ¼ãƒ‰ã«0x0Dã‚’ä½¿ç”¨ã™ã‚‹ã€‚å®šç¾©ã—ãªã‘ã‚Œã°0x0Aã‚’ä½¿ç”¨ã™ã‚‹
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------
 
 size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf, const size_t total_length, const bool bCharSize, const bool bIVS)
 {
-//		8’PˆÊ•„†•¶š—ñ -> UNICODE(UTF-16LE)•¶š—ñ‚Ö‚Ì•ÏŠ·
+//		8å˜ä½ç¬¦å·æ–‡å­—åˆ— -> UNICODE(UTF-16LE)æ–‡å­—åˆ—ã¸ã®å¤‰æ›
 //
-//		sbuf				•ÏŠ·Œ³buf
-//		total_length		‚»‚Ì’·‚³(uint8_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-//		dbuf				•ÏŠ·æbuf
-//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(char16_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
-//		bCharSize			ƒXƒy[ƒX‹y‚Ñ‰p”•¶š‚Ì•ÏŠ·‚É•¶šƒTƒCƒYw’è(NSZ, MSZ)‚ğ”½‰f‚³‚¹‚é‚©”Û‚©Dtrue‚È‚ç”½‰f‚³‚¹‚é
-//		bIVS				š‘Ì‚ÌˆÙ‚È‚éŠ¿š(Š‹, ’Ò, ‹_‚È‚Ç)‘¶İ‚·‚éê‡A‚»‚Ì‹æ•Ê‚ÉˆÙ‘ÌšƒZƒŒƒNƒ^‚ğg—p‚·‚éD
+//		sbuf				å¤‰æ›å…ƒbuf
+//		total_length		ãã®é•·ã•(uint8_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+//		dbuf				å¤‰æ›å…ˆbuf
+//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(char16_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
+//		bCharSize			ã‚¹ãƒšãƒ¼ã‚¹åŠã³è‹±æ•°æ–‡å­—ã®å¤‰æ›ã«æ–‡å­—ã‚µã‚¤ã‚ºæŒ‡å®š(NSZ, MSZ)ã‚’åæ˜ ã•ã›ã‚‹ã‹å¦ã‹ï¼trueãªã‚‰åæ˜ ã•ã›ã‚‹
+//		bIVS				å­—ä½“ã®ç•°ãªã‚‹æ¼¢å­—(è‘›, è¾», ç¥‡ãªã©)å­˜åœ¨ã™ã‚‹å ´åˆã€ãã®åŒºåˆ¥ã«ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã‚’ä½¿ç”¨ã™ã‚‹ï¼
 //
-//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½UTF-16•¶š—ñ‚Ì’·‚³(char16_t’PˆÊ)
-//							dbuf‚ÉNULL‚ğw’è‚·‚é‚Æ•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(char16_t’PˆÊ)‚¾‚¯•Ô‚·
+//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸUTF-16æ–‡å­—åˆ—ã®é•·ã•(char16_tå˜ä½)
+//							dbufã«NULLã‚’æŒ‡å®šã™ã‚‹ã¨å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(char16_tå˜ä½)ã ã‘è¿”ã™
 
 	ConvStatus	status;
 	initConvStatus(&status);
@@ -77,43 +85,43 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 	{
 		if(isControlChar(sbuf[src]))
 		{
-			// 0x00`0x20, 0x7F`0xA0, 0xFF‚Ìê‡
+			// 0x00ã€œ0x20, 0x7Fã€œ0xA0, 0xFFã®å ´åˆ
 
 			switch(sbuf[src])
 			{
 				case 0x08:						// APB (BS)
 				case 0x09:						// APF (TAB)
-					UTF16BUF(sbuf[src]);												// BS, TABo—Í
+					UTF16BUF(sbuf[src]);												// BS, TABå‡ºåŠ›
 					src++;
 					break;
 				case 0x0A:						// APD (LF)
 				case 0x0D:						// APR (CR)
 #ifdef __USE_UTF_CODE_CRLF__
-					UTF16BUF(0x000D);													// CRo—Í
+					UTF16BUF(0x000D);													// CRå‡ºåŠ›
 #endif
-					UTF16BUF(0x000A);													// LFo—Í
+					UTF16BUF(0x000A);													// LFå‡ºåŠ›
 					if( (sbuf[src] == 0x0D) && ((src + 1) < total_length) && (sbuf[src + 1] == 0x0A) ) src++;
 					src++;
 					break;
 				case 0x20:						// SP
-					UTF16BUF( (bCharSize && status.bNormalSize) ? 0x3000 : 0x0020 );	// ‘SŠp, ”¼ŠpSPo—Í
+					UTF16BUF( (bCharSize && status.bNormalSize) ? 0x3000 : 0x0020 );	// å…¨è§’, åŠè§’SPå‡ºåŠ›
 					src++;
 					break;
 				case 0x7F:						// DEL
-					UTF16BUF(0x007F);													// DELo—ÍDiDEL•¶š‚Í‘OŒiF“h‚è‚Â‚Ô‚µ‚È‚Ì‚ÅA–{—ˆ‚Í U+25A0 ‚â U+25AE ‚ğo—Í‚·‚é‚Ì‚ª³‚µ‚¢“®ì‚©‚Æv‚¢‚Ü‚·‚ªA“s‡‚É‚æ‚è‚±‚¤‚µ‚Ä‚ ‚è‚Ü‚·j
+					UTF16BUF(0x007F);													// DELå‡ºåŠ›ï¼ï¼ˆDELæ–‡å­—ã¯å‰æ™¯è‰²å¡—ã‚Šã¤ã¶ã—ãªã®ã§ã€æœ¬æ¥ã¯ U+25A0 ã‚„ U+25AE ã‚’å‡ºåŠ›ã™ã‚‹ã®ãŒæ­£ã—ã„å‹•ä½œã‹ã¨æ€ã„ã¾ã™ãŒã€éƒ½åˆã«ã‚ˆã‚Šã“ã†ã—ã¦ã‚ã‚Šã¾ã™ï¼‰
 					src++;
 					break;
-				case 0x9B:						// CSIˆ—
+				case 0x9B:						// CSIå‡¦ç†
 					src += csiProc(sbuf + src, total_length - src, &status);
 					break;
-				default:						// ‚»‚êˆÈŠO‚Ì§ŒäƒR[ƒh
+				default:						// ãã‚Œä»¥å¤–ã®åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰
 					src += changeConvStatus(sbuf + src, total_length - src, &status);
 					break;
 			}
 		}
 		else
 		{
-			// GL, GR‚É‘Î‰‚·‚é•¶šo—Í
+			// GL, GRã«å¯¾å¿œã™ã‚‹æ–‡å­—å‡ºåŠ›
 
 			int32_t		uc		= 0;
 			int32_t		uc2		= 0;
@@ -134,10 +142,10 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 						src += 2;
 						break;
 					}
-					if (bCharSize && !status.bNormalSize) {															// MSZw’è‚Ìê‡A”¼Šp•¶š‚É•ÏŠ·‚·‚é
-						if (jis2 == 0x2121) uc = 0x20;																// ‘SŠp‹ó”’‚Í”¼Šp‹ó”’‚É•ÏŠ·‚·‚é
-						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);								// ‰p”•¶š‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
-						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// MSZw’è‚ÌƒJƒ^ƒJƒi•¶š‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+					if (bCharSize && !status.bNormalSize) {															// MSZæŒ‡å®šã®å ´åˆã€åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
+						if (jis2 == 0x2121) uc = 0x20;																// å…¨è§’ç©ºç™½ã¯åŠè§’ç©ºç™½ã«å¤‰æ›ã™ã‚‹
+						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);								// è‹±æ•°æ–‡å­—ã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
+						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// MSZæŒ‡å®šã®ã‚«ã‚¿ã‚«ãƒŠæ–‡å­—ã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					}
 					if(uc == 0) uc = jis12Conv(jis2, true);
 					if(uc == 0) uc = jis3Conv(jis2, true);
@@ -154,7 +162,7 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 				case F_ALPHA:
 				case F_P_ALPHA:
 					if( bCharSize && status.bNormalSize ) {
-						uc = jis12Conv(charSize1Conv(jis, true), true);												// NSZw’è‚Ìê‡‚Í‘SŠp•¶š‚É•ÏŠ·‚·‚é
+						uc = jis12Conv(charSize1Conv(jis, true), true);												// NSZæŒ‡å®šã®å ´åˆã¯å…¨è§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 						uc = alphaConv(jis, true);
 					}
@@ -170,7 +178,7 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 				case F_KATAKANA:
 				case F_P_KATAKANA:
 					if(bCharSize && !status.bNormalSize ) {
-						uc = hankaku1Conv(charSize2Conv(jis12Conv(katakana1Conv(jis, true), false), false), true);	// NSZw’è‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+						uc = hankaku1Conv(charSize2Conv(jis12Conv(katakana1Conv(jis, true), false), false), true);	// NSZæŒ‡å®šã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 					uc = katakana1Conv(jis, true);
 					}
@@ -179,7 +187,7 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 					break;
 				case F_HANKAKU:
 					if( bCharSize && status.bNormalSize ) {
-						uc = jis12Conv(charSize2Conv(jis, true), true);												// NSZw’è‚Ìê‡‚Í‘SŠp•¶š‚É•ÏŠ·‚·‚é
+						uc = jis12Conv(charSize2Conv(jis, true), true);												// NSZæŒ‡å®šã®å ´åˆã¯å…¨è§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 						uc = hankaku1Conv(jis, true);
 					}
@@ -197,9 +205,9 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 					if ((uc == 0) && bCharSize && !status.bNormalSize) {
 						if (jis2 == 0x2121) uc = 0x20;
 						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);
-						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// ’Ç‰Á‹L†W‡‚Ì1`84‹æ‚Í–¢’è‹`‚¾‚Æv‚¤‚Ì‚Å‚·‚ªAƒpƒi»ƒŒƒR‚Å‚Í‚±‚Ì•”•ª‚Å
-					}																								// Š¿šŒnW‡‚Æ“¯ˆê‚Ì•¶š‚ğo—Í‚ğ‚µ‚Ä‚¢‚é—á‚ª‚ ‚Á‚½‚Ì‚Å‚±‚¤‚µ‚Ä‚ ‚è‚Ü‚·
-					if(uc == 0) uc = jis12Conv(jis2, true);															// ‚»‚Ìê‡Aƒ\ƒj[»ƒŒƒR‚É‚à‚Á‚Äs‚­‚Æ‰»‚¯‚Ü‚·
+						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// è¿½åŠ è¨˜å·é›†åˆã®1ã€œ84åŒºã¯æœªå®šç¾©ã ã¨æ€ã†ã®ã§ã™ãŒã€ãƒ‘ãƒŠè£½ãƒ¬ã‚³ã§ã¯ã“ã®éƒ¨åˆ†ã§
+					}																								// æ¼¢å­—ç³»é›†åˆã¨åŒä¸€ã®æ–‡å­—ã‚’å‡ºåŠ›ã‚’ã—ã¦ã„ã‚‹ä¾‹ãŒã‚ã£ãŸã®ã§ã“ã†ã—ã¦ã‚ã‚Šã¾ã™
+					if(uc == 0) uc = jis12Conv(jis2, true);															// ãã®å ´åˆã€ã‚½ãƒ‹ãƒ¼è£½ãƒ¬ã‚³ã«ã‚‚ã£ã¦è¡Œãã¨åŒ–ã‘ã¾ã™
 					if(uc != 0) {
 						UTF16BUF(uc);
 					} else {
@@ -209,7 +217,7 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 					src += 2;
 					break;
 				case F_DRCS0:
-					UTF16BUF(0xFF1F);						// 'H'o—Í
+					UTF16BUF(0xFF1F);						// 'ï¼Ÿ'å‡ºåŠ›
 					src += 2;
 					break;
 				case F_DRCS1A:
@@ -227,7 +235,7 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 				case F_DRCS13A:
 				case F_DRCS14A:
 				case F_DRCS15A:
-					UTF16BUF(0x003F);						// '?'o—Í
+					UTF16BUF(0x003F);						// '?'å‡ºåŠ›
 					src++;
 					break;
 				case F_MACROA:
@@ -256,23 +264,23 @@ size_t conv_to_unicode(char16_t *dbuf, const size_t maxbufsize, const uint8_t *s
 	dst--;
 	if(dst > maxbufsize) dst = maxbufsize; 
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(char16_t’PˆÊ), I’[‚Ìnull•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(char16_tå˜ä½), çµ‚ç«¯ã®nullæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf, const size_t total_length, const bool bCharSize, const bool bIVS)
 {
-//		8’PˆÊ•„†•¶š—ñ -> UNICODE(UTF-8)•¶š—ñ‚Ö‚Ì•ÏŠ·
+//		8å˜ä½ç¬¦å·æ–‡å­—åˆ— -> UNICODE(UTF-8)æ–‡å­—åˆ—ã¸ã®å¤‰æ›
 //
-//		sbuf				•ÏŠ·Œ³buf
-//		total_length		‚»‚Ì’·‚³(uint8_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-//		dbuf				•ÏŠ·æbuf
-//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(uint8_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
-//		bCharSize			ƒXƒy[ƒX‹y‚Ñ‰p”•¶š‚Ì•ÏŠ·‚É•¶šƒTƒCƒYw’è(NSZ, MSZ)‚ğ”½‰f‚³‚¹‚é‚©”Û‚©Dtrue‚È‚ç”½‰f‚³‚¹‚é
-//		bIVS				š‘Ì‚ÌˆÙ‚È‚éŠ¿š(Š‹, ’Ò, ‹_‚È‚Ç)‘¶İ‚·‚éê‡A‚»‚Ì‹æ•Ê‚ÉˆÙ‘ÌšƒZƒŒƒNƒ^‚ğg—p‚·‚éD
+//		sbuf				å¤‰æ›å…ƒbuf
+//		total_length		ãã®é•·ã•(uint8_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+//		dbuf				å¤‰æ›å…ˆbuf
+//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint8_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
+//		bCharSize			ã‚¹ãƒšãƒ¼ã‚¹åŠã³è‹±æ•°æ–‡å­—ã®å¤‰æ›ã«æ–‡å­—ã‚µã‚¤ã‚ºæŒ‡å®š(NSZ, MSZ)ã‚’åæ˜ ã•ã›ã‚‹ã‹å¦ã‹ï¼trueãªã‚‰åæ˜ ã•ã›ã‚‹
+//		bIVS				å­—ä½“ã®ç•°ãªã‚‹æ¼¢å­—(è‘›, è¾», ç¥‡ãªã©)å­˜åœ¨ã™ã‚‹å ´åˆã€ãã®åŒºåˆ¥ã«ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã‚’ä½¿ç”¨ã™ã‚‹ï¼
 //
-//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½UTF-8•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)
-//							dbuf‚ÉNULL‚ğw’è‚·‚é‚Æ•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)‚¾‚¯•Ô‚·
+//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸUTF-8æ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)
+//							dbufã«NULLã‚’æŒ‡å®šã™ã‚‹ã¨å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)ã ã‘è¿”ã™
 
 	ConvStatus	status;
 	initConvStatus(&status);
@@ -284,43 +292,43 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 	{
 		if(isControlChar(sbuf[src]))
 		{
-			// 0x00`0x20, 0x7F`0xA0, 0xFF‚Ìê‡
+			// 0x00ã€œ0x20, 0x7Fã€œ0xA0, 0xFFã®å ´åˆ
 
 			switch(sbuf[src])
 			{
 				case 0x08:						// APB (BS)
 				case 0x09:						// APF (TAB)
-					UTF8BUF(sbuf[src]);													// BS, TABo—Í
+					UTF8BUF(sbuf[src]);													// BS, TABå‡ºåŠ›
 					src++;
 					break;
 				case 0x0A:						// APD (LF)
 				case 0x0D:						// APR (CR)
 #ifdef __USE_UTF_CODE_CRLF__
-					UTF8BUF(0x000D);													// CRo—Í
+					UTF8BUF(0x000D);													// CRå‡ºåŠ›
 #endif
-					UTF8BUF(0x000A);													// LFo—Í
+					UTF8BUF(0x000A);													// LFå‡ºåŠ›
 					if( (sbuf[src] == 0x0D) && ((src + 1) < total_length) && (sbuf[src + 1] == 0x0A) ) src++;
 					src++;
 					break;
 				case 0x20:						// SP
-					UTF8BUF( (bCharSize && status.bNormalSize) ? 0x3000 : 0x0020 );	// ‘SŠp, ”¼ŠpSPo—Í
+					UTF8BUF( (bCharSize && status.bNormalSize) ? 0x3000 : 0x0020 );	// å…¨è§’, åŠè§’SPå‡ºåŠ›
 					src++;
 					break;
 				case 0x7F:						// DEL
-					UTF8BUF(0x007F);													// DELo—ÍDiDEL•¶š‚Í‘OŒiF“h‚è‚Â‚Ô‚µ‚È‚Ì‚ÅA–{—ˆ‚Í U+25A0 ‚â U+25AE ‚ğo—Í‚·‚é‚Ì‚ª³‚µ‚¢“®ì‚©‚Æv‚¢‚Ü‚·‚ªA“s‡‚É‚æ‚è‚±‚¤‚µ‚Ä‚ ‚è‚Ü‚·j
+					UTF8BUF(0x007F);													// DELå‡ºåŠ›ï¼ï¼ˆDELæ–‡å­—ã¯å‰æ™¯è‰²å¡—ã‚Šã¤ã¶ã—ãªã®ã§ã€æœ¬æ¥ã¯ U+25A0 ã‚„ U+25AE ã‚’å‡ºåŠ›ã™ã‚‹ã®ãŒæ­£ã—ã„å‹•ä½œã‹ã¨æ€ã„ã¾ã™ãŒã€éƒ½åˆã«ã‚ˆã‚Šã“ã†ã—ã¦ã‚ã‚Šã¾ã™ï¼‰
 					src++;
 					break;
-				case 0x9B:						// CSIˆ—
+				case 0x9B:						// CSIå‡¦ç†
 					src += csiProc(sbuf + src, total_length - src, &status);
 					break;
-				default:						// ‚»‚êˆÈŠO‚Ì§ŒäƒR[ƒh
+				default:						// ãã‚Œä»¥å¤–ã®åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰
 					src += changeConvStatus(sbuf + src, total_length - src, &status);
 					break;
 			}
 		}
 		else
 		{
-			// GL, GR‚É‘Î‰‚·‚é•¶šo—Í
+			// GL, GRã«å¯¾å¿œã™ã‚‹æ–‡å­—å‡ºåŠ›
 
 			int32_t		uc		= 0;
 			int32_t		uc2		= 0;
@@ -341,10 +349,10 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 						src += 2;
 						break;
 					}
-					if (bCharSize && !status.bNormalSize) {															// MSZw’è‚Ìê‡A”¼Šp•¶š‚É•ÏŠ·‚·‚é
-						if (jis2 == 0x2121) uc = 0x20;																// ‘SŠp‹ó”’‚Í”¼Šp‹ó”’‚É•ÏŠ·‚·‚é
-						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);								// ‰p”•¶š‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
-						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// MSZw’è‚ÌƒJƒ^ƒJƒi•¶š‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+					if (bCharSize && !status.bNormalSize) {															// MSZæŒ‡å®šã®å ´åˆã€åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
+						if (jis2 == 0x2121) uc = 0x20;																// å…¨è§’ç©ºç™½ã¯åŠè§’ç©ºç™½ã«å¤‰æ›ã™ã‚‹
+						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);								// è‹±æ•°æ–‡å­—ã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
+						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// MSZæŒ‡å®šã®ã‚«ã‚¿ã‚«ãƒŠæ–‡å­—ã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					}
 					if(uc == 0) uc = jis12Conv(jis2, true);
 					if(uc == 0) uc = jis3Conv(jis2, true);
@@ -361,7 +369,7 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 				case F_ALPHA:
 				case F_P_ALPHA:
 					if( bCharSize && status.bNormalSize ) {
-						uc = jis12Conv(charSize1Conv(jis, true), true);												// NSZw’è‚Ìê‡‚Í‘SŠp•¶š‚É•ÏŠ·‚·‚é
+						uc = jis12Conv(charSize1Conv(jis, true), true);												// NSZæŒ‡å®šã®å ´åˆã¯å…¨è§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 						uc = alphaConv(jis, true);
 					}
@@ -377,7 +385,7 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 				case F_KATAKANA:
 				case F_P_KATAKANA:
 					if(bCharSize && !status.bNormalSize ) {
-						uc = hankaku1Conv(charSize2Conv(jis12Conv(katakana1Conv(jis, true), false), false), true);	// NSZw’è‚Ìê‡‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+						uc = hankaku1Conv(charSize2Conv(jis12Conv(katakana1Conv(jis, true), false), false), true);	// NSZæŒ‡å®šã®å ´åˆã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 					uc = katakana1Conv(jis, true);
 					}
@@ -386,7 +394,7 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 					break;
 				case F_HANKAKU:
 					if( bCharSize && status.bNormalSize ) {
-						uc = jis12Conv(charSize2Conv(jis, true), true);												// NSZw’è‚Ìê‡‚Í‘SŠp•¶š‚É•ÏŠ·‚·‚é
+						uc = jis12Conv(charSize2Conv(jis, true), true);												// NSZæŒ‡å®šã®å ´åˆã¯å…¨è§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 					} else {
 						uc = hankaku1Conv(jis, true);
 					}
@@ -404,9 +412,9 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 					if ((uc == 0) && bCharSize && !status.bNormalSize) {
 						if (jis2 == 0x2121) uc = 0x20;
 						if (uc == 0) uc = alphaConv(charSize1Conv(jis2, false), true);
-						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// ’Ç‰Á‹L†W‡‚Ì1`84‹æ‚Í–¢’è‹`‚¾‚Æv‚¤‚Ì‚Å‚·‚ªAƒpƒi»ƒŒƒR‚Å‚Í‚±‚Ì•”•ª‚Å
-					}																								// Š¿šŒnW‡‚Æ“¯ˆê‚Ì•¶š‚ğo—Í‚ğ‚µ‚Ä‚¢‚é—á‚ª‚ ‚Á‚½‚Ì‚Å‚±‚¤‚µ‚Ä‚ ‚è‚Ü‚·
-					if (uc == 0) uc = jis12Conv(jis2, true);														// ‚»‚Ìê‡Aƒ\ƒj[»ƒŒƒR‚É‚à‚Á‚Äs‚­‚Æ‰»‚¯‚Ü‚·
+						if (uc == 0) uc = hankaku1Conv(charSize2Conv(jis2, false), true);							// è¿½åŠ è¨˜å·é›†åˆã®1ã€œ84åŒºã¯æœªå®šç¾©ã ã¨æ€ã†ã®ã§ã™ãŒã€ãƒ‘ãƒŠè£½ãƒ¬ã‚³ã§ã¯ã“ã®éƒ¨åˆ†ã§
+					}																								// æ¼¢å­—ç³»é›†åˆã¨åŒä¸€ã®æ–‡å­—ã‚’å‡ºåŠ›ã‚’ã—ã¦ã„ã‚‹ä¾‹ãŒã‚ã£ãŸã®ã§ã“ã†ã—ã¦ã‚ã‚Šã¾ã™
+					if (uc == 0) uc = jis12Conv(jis2, true);														// ãã®å ´åˆã€ã‚½ãƒ‹ãƒ¼è£½ãƒ¬ã‚³ã«ã‚‚ã£ã¦è¡Œãã¨åŒ–ã‘ã¾ã™
 					if(uc != 0) {
 						UTF8BUF(uc);
 					} else {
@@ -416,7 +424,7 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 					src += 2;
 					break;
 				case F_DRCS0:
-					UTF8BUF(0xFF1F);						// 'H'o—Í
+					UTF8BUF(0xFF1F);						// 'ï¼Ÿ'å‡ºåŠ›
 					src += 2;
 					break;
 				case F_DRCS1A:
@@ -434,7 +442,7 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 				case F_DRCS13A:
 				case F_DRCS14A:
 				case F_DRCS15A:
-					UTF8BUF(0x003F);						// '?'o—Í
+					UTF8BUF(0x003F);						// '?'å‡ºåŠ›
 					src++;
 					break;
 				case F_MACROA:
@@ -462,27 +470,27 @@ size_t conv_to_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sb
 	dst--;
 	if(dst > maxbufsize) dst = maxbufsize; 
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ), I’[‚Ìnull•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½), çµ‚ç«¯ã®nullæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t *sbuf, const size_t total_length, const bool bCharSize)
 {
-	//		UNICODE(UTF-16LE)•¶š—ñ -> 8’PˆÊ•„†•¶š—ñ‚Ö‚Ì•ÏŠ·
+	//		UNICODE(UTF-16LE)æ–‡å­—åˆ— -> 8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¸ã®å¤‰æ›
 	//
-	//		sbuf				•ÏŠ·Œ³buf
-	//		total_length		‚»‚Ì’·‚³(char16_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-	//		dbuf				•ÏŠ·æbuf
-	//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(uint8_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
+	//		sbuf				å¤‰æ›å…ƒbuf
+	//		total_length		ãã®é•·ã•(char16_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+	//		dbuf				å¤‰æ›å…ˆbuf
+	//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint8_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
 	//
-	//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)
-	//							dbuf‚ÉNULL‚ğw’è‚·‚é‚Æ•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)‚¾‚¯•Ô‚·
+	//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)
+	//							dbufã«NULLã‚’æŒ‡å®šã™ã‚‹ã¨å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)ã ã‘è¿”ã™
 	//
-	//		ˆÈ‰º‚ÌBANKŠ„‚è“–‚Ä•û–@‚Å•ÏŠ·ƒRƒXƒgi•ÏŠ·Œ‹‰Ê‚Ì8’PˆÊ•¶š—ñ‚Ì’·‚³j‚ğŒvZ‚µAƒRƒXƒg‚ªÅ‚à¬‚³‚­‚È‚é•û–@‚Å•ÏŠ·‚ğs‚¤D
+	//		ä»¥ä¸‹ã®BANKå‰²ã‚Šå½“ã¦æ–¹æ³•ã§å¤‰æ›ã‚³ã‚¹ãƒˆï¼ˆå¤‰æ›çµæœã®8å˜ä½æ–‡å­—åˆ—ã®é•·ã•ï¼‰ã‚’è¨ˆç®—ã—ã€ã‚³ã‚¹ãƒˆãŒæœ€ã‚‚å°ã•ããªã‚‹æ–¹æ³•ã§å¤‰æ›ã‚’è¡Œã†ï¼
 	//
-	//		Š„‚è“–‚Ä•û–@ 
-	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ‚Ì‰½‚ê‚àg—p‚·‚é
-	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ‚Ì‚·‚×‚Ä‚Ì•¶ší‚ÉŠ„‚è“–‚Ä‚éD
+	//		å‰²ã‚Šå½“ã¦æ–¹æ³• 
+	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ã®ä½•ã‚Œã‚‚ä½¿ç”¨ã™ã‚‹
+	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ã®ã™ã¹ã¦ã®æ–‡å­—ç¨®ã«å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	ConvStatus	status;
@@ -497,7 +505,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 	size_t		dst = 0;
 
 
-	// •ÏŠ·ƒƒCƒ“
+	// å¤‰æ›ãƒ¡ã‚¤ãƒ³
 
 	while (src < total_length)
 	{
@@ -508,7 +516,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 
 		switch (charType)
 		{
-			// §ŒäƒR[ƒho—ÍiSPŠÜ‚Şj
+			// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰å‡ºåŠ›ï¼ˆSPå«ã‚€ï¼‰
 
 		case F_CONTROL:
 			switch (jisCode)
@@ -545,17 +553,17 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 			}
 			break;
 
-			// •¶šo—Í
+			// æ–‡å­—å‡ºåŠ›
 
 		case F_ALPHA:
 		case F_HANKAKU:
 			if (charType != cType) {
-				cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
 			IF_NSZ_TO_MSZ;
-			switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -611,12 +619,12 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 		case F_JIS2KANJI:
 		case F_KIGOU:
 			if (charType != cType) {
-				cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
 			IF_MSZ_TO_NSZ;
-			switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_2B_GSET_TO_G0(charType);					// F -> G0
@@ -682,18 +690,18 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 		case F_KATAKANA:
 		case F_KANACOMMON:
 			if (charType != cType) {
-				cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
 			IF_MSZ_TO_NSZ;
-			switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
-				// F_HIRAGANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-				// F_KATAKANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-				// F_KANACOMMON ‚ÍAF_HIRAGANA, F_KATAKANA, F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚ÌO‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
+				// F_HIRAGANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+				// F_KATAKANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+				// F_KANACOMMON ã¯ã€F_HIRAGANA, F_KATAKANA, F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®ä¸‰ã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
 
-				// F_HIRAGANA, F_KATAKANA ‚ğ‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡
+				// F_HIRAGANA, F_KATAKANA ã‚’ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -741,7 +749,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 					WRITEBUF(jisCode);
 					break;
 
-				// F_KANACOMMON ‚ğ F_HIRAGANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+				// F_KANACOMMON ã‚’ F_HIRAGANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_HIRAGANA_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(F_HIRAGANA);				// F_HIRAGANA -> G0
@@ -789,7 +797,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 					WRITEBUF(jisCode);
 					break;
 
-				// F_KANACOMMON ‚ğ F_KATAKANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+				// F_KANACOMMON ã‚’ F_KATAKANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_KATAKANA_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(F_KATAKANA);				// F_KATAKANA -> G0
@@ -837,7 +845,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 					WRITEBUF(jisCode);
 					break;
 
-				// F_HIARGANA, F_KATAKANA, F_KANACOMMON ‚ğ F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡D
+				// F_HIARGANA, F_KATAKANA, F_KANACOMMON ã‚’ F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆï¼
 				
 				case USE_KANJI_BANK_G0_TO_GL:
 					if (cType == F_HIRAGANA) {
@@ -958,27 +966,27 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const char16_t 
 
 	delete[] seq;
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ), I’[‚ÌNULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½), çµ‚ç«¯ã®NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf, const size_t total_length, const bool bCharSize)
 {
-	//		UNICODE(UTF-8)•¶š—ñ -> 8’PˆÊ•„†•¶š—ñ‚Ö‚Ì•ÏŠ·
+	//		UNICODE(UTF-8)æ–‡å­—åˆ— -> 8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¸ã®å¤‰æ›
 	//
-	//		sbuf				•ÏŠ·Œ³buf
-	//		total_length		‚»‚Ì’·‚³(uint8_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-	//		dbuf				•ÏŠ·æbuf
-	//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(uint8_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
+	//		sbuf				å¤‰æ›å…ƒbuf
+	//		total_length		ãã®é•·ã•(uint8_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+	//		dbuf				å¤‰æ›å…ˆbuf
+	//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint8_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
 	//
-	//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)
-	//							dbuf‚ÉNULL‚ğw’è‚·‚é‚Æ•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)‚¾‚¯•Ô‚·
+	//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)
+	//							dbufã«NULLã‚’æŒ‡å®šã™ã‚‹ã¨å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)ã ã‘è¿”ã™
 	//
-	//		ˆÈ‰º‚ÌBANKŠ„‚è“–‚Ä•û–@‚Å•ÏŠ·ƒRƒXƒgi•ÏŠ·Œ‹‰Ê‚Ì8’PˆÊ•¶š—ñ‚Ì’·‚³j‚ğŒvZ‚µAƒRƒXƒg‚ªÅ‚à¬‚³‚­‚È‚é•û–@‚Å•ÏŠ·‚ğs‚¤D
+	//		ä»¥ä¸‹ã®BANKå‰²ã‚Šå½“ã¦æ–¹æ³•ã§å¤‰æ›ã‚³ã‚¹ãƒˆï¼ˆå¤‰æ›çµæœã®8å˜ä½æ–‡å­—åˆ—ã®é•·ã•ï¼‰ã‚’è¨ˆç®—ã—ã€ã‚³ã‚¹ãƒˆãŒæœ€ã‚‚å°ã•ããªã‚‹æ–¹æ³•ã§å¤‰æ›ã‚’è¡Œã†ï¼
 	//
-	//		Š„‚è“–‚Ä•û–@ 
-	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ‚Ì‰½‚ê‚àg—p‚·‚é
-	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ‚Ì‚·‚×‚Ä‚Ì•¶ší‚ÉŠ„‚è“–‚Ä‚éD
+	//		å‰²ã‚Šå½“ã¦æ–¹æ³• 
+	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ã®ä½•ã‚Œã‚‚ä½¿ç”¨ã™ã‚‹
+	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ã®ã™ã¹ã¦ã®æ–‡å­—ç¨®ã«å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	ConvStatus	status;
@@ -993,7 +1001,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 	size_t		dst = 0;
 
 
-	// •ÏŠ·ƒƒCƒ“
+	// å¤‰æ›ãƒ¡ã‚¤ãƒ³
 
 	while (src < total_length)
 	{
@@ -1004,7 +1012,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 
 		switch (charType)
 		{
-			// §ŒäƒR[ƒho—ÍiSPŠÜ‚Şj
+			// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰å‡ºåŠ›ï¼ˆSPå«ã‚€ï¼‰
 
 			case F_CONTROL:
 				switch (jisCode)
@@ -1041,17 +1049,17 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 				}
 				break;
 
-			// •¶šo—Í
+			// æ–‡å­—å‡ºåŠ›
 
 			case F_ALPHA:
 			case F_HANKAKU:
 				if (charType != cType) {
-					cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+					cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 					cType = charType;
 				}
 
 				IF_NSZ_TO_MSZ;	
-				switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+				switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 				{
 					case USE_BANK_G0_TO_GL:
 						CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -1107,12 +1115,12 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 			case F_JIS2KANJI:
 			case F_KIGOU:
 				if (charType != cType) {
-					cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+					cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 					cType = charType;
 				}
 
 				IF_MSZ_TO_NSZ;
-				switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+				switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 				{
 					case USE_BANK_G0_TO_GL:
 						CHECK_AND_SET_2B_GSET_TO_G0(charType);					// F -> G0
@@ -1178,18 +1186,18 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 			case F_KATAKANA:
 			case F_KANACOMMON:
 				if (charType != cType) {
-					cCount++;												// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+					cCount++;												// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 					cType = charType;
 				}
 
 				IF_MSZ_TO_NSZ;
-				switch (seq[cCount])										// seq[]‚É]‚¢AG0, G1, G2, G3‚Ì‚Ç‚ê‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+				switch (seq[cCount])										// seq[]ã«å¾“ã„ã€G0, G1, G2, G3ã®ã©ã‚Œã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 				{
-					// F_HIRAGANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-					// F_KATAKANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-					// F_KANACOMMON ‚ÍAF_HIRAGANA, F_KATAKANA, F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚ÌO‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
+					// F_HIRAGANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+					// F_KATAKANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+					// F_KANACOMMON ã¯ã€F_HIRAGANA, F_KATAKANA, F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®ä¸‰ã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
 
-					// F_HIRAGANA, F_KATAKANA ‚ğ‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡
+					// F_HIRAGANA, F_KATAKANA ã‚’ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 					case USE_BANK_G0_TO_GL:
 						CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -1237,7 +1245,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 						WRITEBUF(jisCode);
 						break;
 
-					// F_KANACOMMON ‚ğ F_HIRAGANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+					// F_KANACOMMON ã‚’ F_HIRAGANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 					case USE_HIRAGANA_BANK_G0_TO_GL:
 						CHECK_AND_SET_1B_GSET_TO_G0(F_HIRAGANA);				// F_HIRAGANA -> G0
@@ -1285,7 +1293,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 						WRITEBUF(jisCode);
 						break;
 
-					// F_KANACOMMON ‚ğ F_KATAKANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+					// F_KANACOMMON ã‚’ F_KATAKANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 					case USE_KATAKANA_BANK_G0_TO_GL:
 						CHECK_AND_SET_1B_GSET_TO_G0(F_KATAKANA);				// F_KATAKANA -> G0
@@ -1333,7 +1341,7 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 						WRITEBUF(jisCode);
 						break;
 
-					// F_HIARGANA, F_KATAKANA, F_KANACOMMON ‚ğ F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡D
+					// F_HIARGANA, F_KATAKANA, F_KANACOMMON ã‚’ F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆï¼
 
 					case USE_KANJI_BANK_G0_TO_GL:
 						if (cType == F_HIRAGANA) {
@@ -1463,21 +1471,21 @@ size_t conv_from_unicode(uint8_t *dbuf, const size_t maxbufsize, const uint8_t *
 
 	delete[] seq;
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ), I’[‚ÌNULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½), çµ‚ç«¯ã®NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------
 
 size_t conv_to_U32T(uint32_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf, const size_t total_length)
 {
-//		8’PˆÊ•„†•¶š—ñ -> “à•”ˆ——p32bit•¶š—ñ‚Ö‚Ì•ÏŠ·
+//		8å˜ä½ç¬¦å·æ–‡å­—åˆ— -> å†…éƒ¨å‡¦ç†ç”¨32bitæ–‡å­—åˆ—ã¸ã®å¤‰æ›
 //
-//		sbuf				•ÏŠ·Œ³buf
-//		total_length		‚»‚Ì’·‚³(uint8_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-//		dbuf				•ÏŠ·æbuf
-//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(uint32_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
+//		sbuf				å¤‰æ›å…ƒbuf
+//		total_length		ãã®é•·ã•(uint8_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+//		dbuf				å¤‰æ›å…ˆbuf
+//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint32_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
 //
-//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint32_t’PˆÊ)
+//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint32_tå˜ä½)
 //
 
 	ConvStatus	status;
@@ -1490,40 +1498,40 @@ size_t conv_to_U32T(uint32_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf
 	{
 		if (isControlChar(sbuf[src]))
 		{
-			// 0x00`0x20, 0x7F`0xA0, 0xFF‚Ìê‡
+			// 0x00ã€œ0x20, 0x7Fã€œ0xA0, 0xFFã®å ´åˆ
 
 			switch (sbuf[src])
 			{
 				case 0x08:						// APB (BS)
 				case 0x09:						// APF (TAB)
-					UINT32TBUF(C_HALF_CONTROL, sbuf[src]);								// BS, TABo—Í
+					UINT32TBUF(C_HALF_CONTROL, sbuf[src]);								// BS, TABå‡ºåŠ›
 					src++;
 					break;
 				case 0x0A:						// APD (LF)
 				case 0x0D:						// APR (CR)
-					UINT32TBUF(C_HALF_CONTROL, 0x000D);									// LFo—Í
+					UINT32TBUF(C_HALF_CONTROL, 0x000D);									// LFå‡ºåŠ›
 					if ((sbuf[src] == 0x0D) && ((src + 1) < total_length) && (sbuf[src + 1] == 0x0A)) src++;
 					src++;
 					break;
 				case 0x20:						// SP
-					UINT32TBUF(C_HALF_CONTROL, 0x0020 );								// SPo—Í
+					UINT32TBUF(C_HALF_CONTROL, 0x0020 );								// SPå‡ºåŠ›
 					src++;
 					break;
 				case 0x7F:						// DEL
-					UINT32TBUF(C_HALF_CONTROL, 0x007F);									// DELo—Í
+					UINT32TBUF(C_HALF_CONTROL, 0x007F);									// DELå‡ºåŠ›
 					src++;
 					break;
-				case 0x9B:						// CSIˆ—
+				case 0x9B:						// CSIå‡¦ç†
 					src += csiProc(sbuf + src, total_length - src, &status);
 					break;
-				default:						// ‚»‚êˆÈŠO‚Ì§ŒäƒR[ƒh
+				default:						// ãã‚Œä»¥å¤–ã®åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰
 					src += changeConvStatus(sbuf + src, total_length - src, &status);
 					break;
 			}
 		}
 		else
 		{
-			// GL, GR‚É‘Î‰‚·‚é•¶šo—Í
+			// GL, GRã«å¯¾å¿œã™ã‚‹æ–‡å­—å‡ºåŠ›
 
 			int32_t		uc		= 0;
 			int32_t		tmpjis	= 0;
@@ -1618,7 +1626,7 @@ size_t conv_to_U32T(uint32_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf
 					src += 2;
 					break;
 				case F_DRCS0:
-					UINT32TBUF(C_HALF_JIS1KANJI, 0x2129);						// 'H'o—Í
+					UINT32TBUF(C_HALF_JIS1KANJI, 0x2129);						// 'ï¼Ÿ'å‡ºåŠ›
 					src += 2;
 					break;
 				case F_DRCS1A:
@@ -1636,7 +1644,7 @@ size_t conv_to_U32T(uint32_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf
 				case F_DRCS13A:
 				case F_DRCS14A:
 				case F_DRCS15A:
-					UINT32TBUF(C_HALF_ALPHA, 0x003F);							// '?'o—Í
+					UINT32TBUF(C_HALF_ALPHA, 0x003F);							// '?'å‡ºåŠ›
 					src++;
 					break;
 				case F_MACROA:
@@ -1660,30 +1668,30 @@ size_t conv_to_U32T(uint32_t *dbuf, const size_t maxbufsize, const uint8_t *sbuf
 
 	}
 
-	if (dst < maxbufsize) dbuf[dst] = 0x0000;								// I’[‚ÌNULL•¶š
+	if (dst < maxbufsize) dbuf[dst] = 0x0000;								// çµ‚ç«¯ã®NULLæ–‡å­—
 
 	if (dst > maxbufsize) dst = maxbufsize; 
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint32_t’PˆÊ), I’[‚Ìnull•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint32_tå˜ä½), çµ‚ç«¯ã®nullæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sbuf, const size_t total_length)
 {
-	//		“à•”ˆ——p32bit•¶š—ñ -> 8’PˆÊ•„†•¶š—ñ‚Ö‚Ì•ÏŠ·
+	//		å†…éƒ¨å‡¦ç†ç”¨32bitæ–‡å­—åˆ— -> 8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¸ã®å¤‰æ›
 	//
-	//		sbuf				•ÏŠ·Œ³buf
-	//		total_length		‚»‚Ì’·‚³(uint32_t’PˆÊ, NULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢)
-	//		dbuf				•ÏŠ·æbuf
-	//		maxbufsize			•ÏŠ·æbuf‚ÌÅ‘åƒTƒCƒY(uint8_t’PˆÊ), ‰z‚¦‚½•ª‚Í‘‚«‚Ü‚ê‚¸–³‹‚³‚ê‚é
+	//		sbuf				å¤‰æ›å…ƒbuf
+	//		total_length		ãã®é•·ã•(uint32_tå˜ä½, NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„)
+	//		dbuf				å¤‰æ›å…ˆbuf
+	//		maxbufsize			å¤‰æ›å…ˆbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint8_tå˜ä½), è¶ŠãˆãŸåˆ†ã¯æ›¸ãè¾¼ã¾ã‚Œãšç„¡è¦–ã•ã‚Œã‚‹
 	//
-	//		–ß‚è’l				•ÏŠ·‚µ‚Ä¶¬‚µ‚½•¶š—ñ‚Ì’·‚³(uint8_t’PˆÊ)
+	//		æˆ»ã‚Šå€¤				å¤‰æ›ã—ã¦ç”Ÿæˆã—ãŸæ–‡å­—åˆ—ã®é•·ã•(uint8_tå˜ä½)
 	//
-	//		ˆÈ‰º‚ÌBANKŠ„‚è“–‚Ä•û–@‚Å•ÏŠ·ƒRƒXƒgi•ÏŠ·Œ‹‰Ê‚Ì8’PˆÊ•¶š—ñ‚Ì’·‚³j‚ğŒvZ‚µAƒRƒXƒg‚ªÅ‚à¬‚³‚­‚È‚é•û–@‚Å•ÏŠ·‚ğs‚¤D
+	//		ä»¥ä¸‹ã®BANKå‰²ã‚Šå½“ã¦æ–¹æ³•ã§å¤‰æ›ã‚³ã‚¹ãƒˆï¼ˆå¤‰æ›çµæœã®8å˜ä½æ–‡å­—åˆ—ã®é•·ã•ï¼‰ã‚’è¨ˆç®—ã—ã€ã‚³ã‚¹ãƒˆãŒæœ€ã‚‚å°ã•ããªã‚‹æ–¹æ³•ã§å¤‰æ›ã‚’è¡Œã†ï¼
 	//
-	//		Š„‚è“–‚Ä•û–@ 
-	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ‚Ì‰½‚ê‚àg—p‚·‚é
-	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ‚Ì‚·‚×‚Ä‚Ì•¶ší‚ÉŠ„‚è“–‚Ä‚éD
+	//		å‰²ã‚Šå½“ã¦æ–¹æ³• 
+	//			REGION_GL, REGION_GR			: BANKG0, BANKG1, BANKG2, BANKG3 ã®ä½•ã‚Œã‚‚ä½¿ç”¨ã™ã‚‹
+	//			BANKG0, BANKG1, BANKG2, BANKG3 	: F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA, F_KIGOU, F_HANKAKU,F_JIS2KANJI ã®ã™ã¹ã¦ã®æ–‡å­—ç¨®ã«å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	const bool	bCharSize = true;
@@ -1700,7 +1708,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 	size_t		dst = 0;
 
 
-	// •ÏŠ·ƒƒCƒ“
+	// å¤‰æ›ãƒ¡ã‚¤ãƒ³
 
 	while (src < total_length)
 	{
@@ -1710,7 +1718,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 		uint32_t	charWidth = charType & C_MASK_CHARWIDTH;
 		charType = (charType  & C_MASK_CHARCODE) >> 16;
 
-		if ((charType != F_CONTROL) || (jisCode == 0x20))						// •¶ší‚ªF_CONTROLˆÈŠO‚ÌA‹y‚Ñ‹ó”’•¶š‚Ì‚Í•¶šƒTƒCƒYî•ñ‚ğ•t—^‚·‚éB
+		if ((charType != F_CONTROL) || (jisCode == 0x20))						// æ–‡å­—ç¨®ãŒF_CONTROLä»¥å¤–ã®æ™‚ã€åŠã³ç©ºç™½æ–‡å­—ã®æ™‚ã¯æ–‡å­—ã‚µã‚¤ã‚ºæƒ…å ±ã‚’ä»˜ä¸ã™ã‚‹ã€‚
 		{
 			if (charWidth == C_FULLSIZE) {
 				IF_MSZ_TO_NSZ;
@@ -1722,7 +1730,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 
 		switch (charType)
 		{
-			// §ŒäƒR[ƒho—ÍiSPŠÜ‚Şj
+			// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰å‡ºåŠ›ï¼ˆSPå«ã‚€ï¼‰
 
 		case F_CONTROL:
 			switch (jisCode)
@@ -1745,16 +1753,16 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 			}
 			break;
 
-			// •¶šo—Í
+			// æ–‡å­—å‡ºåŠ›
 
 		case F_ALPHA:
 		case F_HANKAKU:
 			if (charType != cType) {
-				cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
-			switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1‚Ì‚Ç‚¿‚ç‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1ã®ã©ã¡ã‚‰ã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -1810,11 +1818,11 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 		case F_JIS2KANJI:
 		case F_KIGOU:
 			if (charType != cType) {
-				cCount++;													// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;													// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
-			switch (seq[cCount])											// seq[]‚É]‚¢AG0, G1‚Ì‚Ç‚¿‚ç‚©AGL, GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])											// seq[]ã«å¾“ã„ã€G0, G1ã®ã©ã¡ã‚‰ã‹ã€GL, GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_2B_GSET_TO_G0(charType);					// F -> G0
@@ -1880,17 +1888,17 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 		case F_KATAKANA:
 		case F_KANACOMMON:
 			if (charType != cType) {
-				cCount++;												// •¶ší‚ªØ‚è‘Ö‚í‚Á‚½
+				cCount++;												// æ–‡å­—ç¨®ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸ
 				cType = charType;
 			}
 
-			switch (seq[cCount])										// seq[]‚É]‚¢AREGION_GL, REGION_GR‚Ì‚Ç‚¿‚ç‚©‚ğg‚¤
+			switch (seq[cCount])										// seq[]ã«å¾“ã„ã€REGION_GL, REGION_GRã®ã©ã¡ã‚‰ã‹ã‚’ä½¿ã†
 			{
-				// F_HIRAGANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-				// F_KATAKANA ‚ÍA‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡‚ÆAF_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚Ì“ñ‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
-				// F_KANACOMMON ‚ÍAF_HIRAGANA, F_KATAKANA, F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡‚ÌO‚Â‚Ì‘I‘ğˆ‚ª‚ ‚éD
+				// F_HIRAGANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+				// F_KATAKANA ã¯ã€ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆã¨ã€F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®äºŒã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
+				// F_KANACOMMON ã¯ã€F_HIRAGANA, F_KATAKANA, F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆã®ä¸‰ã¤ã®é¸æŠè‚¢ãŒã‚ã‚‹ï¼
 
-				// F_HIRAGANA, F_KATAKANA ‚ğ‚»‚Ì‚Ü‚Üo—Í‚·‚éê‡
+				// F_HIRAGANA, F_KATAKANA ã‚’ãã®ã¾ã¾å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(charType);					// F -> G0
@@ -1938,7 +1946,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 					WRITEBUF(jisCode);
 					break;
 
-				// F_KANACOMMON ‚ğ F_HIRAGANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+				// F_KANACOMMON ã‚’ F_HIRAGANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_HIRAGANA_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(F_HIRAGANA);				// F_HIRAGANA -> G0
@@ -1986,7 +1994,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 					WRITEBUF(jisCode);
 					break;
 
-				// F_KANACOMMON ‚ğ F_KATAKANA ‚Æ‚µ‚Äo—Í‚·‚éê‡
+				// F_KANACOMMON ã‚’ F_KATAKANA ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆ
 
 				case USE_KATAKANA_BANK_G0_TO_GL:
 					CHECK_AND_SET_1B_GSET_TO_G0(F_KATAKANA);				// F_KATAKANA -> G0
@@ -2034,7 +2042,7 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 					WRITEBUF(jisCode);
 					break;
 
-				// F_HIARGANA, F_KATAKANA, F_KANACOMMON ‚ğ F_JIS1KANJI ‚Æ‚µ‚Äo—Í‚·‚éê‡D
+				// F_HIARGANA, F_KATAKANA, F_KANACOMMON ã‚’ F_JIS1KANJI ã¨ã—ã¦å‡ºåŠ›ã™ã‚‹å ´åˆï¼
 				
 				case USE_KANJI_BANK_G0_TO_GL:
 					if (cType == F_HIRAGANA) {
@@ -2155,15 +2163,15 @@ size_t conv_from_U32T(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sb
 
 	delete[] seq;
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ), I’[‚ÌNULL•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½), çµ‚ç«¯ã®NULLæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t convU32T_to_UTF16(char16_t *dbuf, const size_t maxbufsize, const uint32_t *sbuf, const size_t total_length)
 {
 	//
-	// “à•”ˆ——p32bit•¶š—ñ‚ğAUTF-16•¶š—ñ‚É•ÏŠ·‚·‚é
-	// ‚»‚ÌÛA•¶šƒTƒCƒYw’è(C_HALF ‚ ‚é‚¢‚Í C_FULL)‚Í–³‹‚µA‘SŠp‰p”š‹y‚Ñ‹ó”’•¶š‚Í”¼Šp‚É•ÏŠ·‚·‚é
+	// å†…éƒ¨å‡¦ç†ç”¨32bitæ–‡å­—åˆ—ã‚’ã€UTF-16æ–‡å­—åˆ—ã«å¤‰æ›ã™ã‚‹
+	// ãã®éš›ã€æ–‡å­—ã‚µã‚¤ã‚ºæŒ‡å®š(C_HALF ã‚ã‚‹ã„ã¯ C_FULL)ã¯ç„¡è¦–ã—ã€å…¨è§’è‹±æ•°å­—åŠã³ç©ºç™½æ–‡å­—ã¯åŠè§’ã«å¤‰æ›ã™ã‚‹
 	//
 
 	size_t	dst = 0;
@@ -2184,9 +2192,9 @@ size_t convU32T_to_UTF16(char16_t *dbuf, const size_t maxbufsize, const uint32_t
 				uc = jis;
 				if (uc == 0x000D) {
 #ifdef __USE_UTF_CODE_CRLF__
-					UTF16BUF2(0x000D);													// CRo—Í
+					UTF16BUF2(0x000D);													// CRå‡ºåŠ›
 #endif
-					UTF16BUF2(0x000A);													// LFo—Í
+					UTF16BUF2(0x000A);													// LFå‡ºåŠ›
 				}
 				else {
 					UTF16BUF2(uc);
@@ -2203,8 +2211,8 @@ size_t convU32T_to_UTF16(char16_t *dbuf, const size_t maxbufsize, const uint32_t
 					UTF16BUF2(uc2);
 					break;
 				}
-				if (jis == 0x2121) uc = 0x20;										// ‘SŠp‹ó”’‚Í”¼Šp‹ó”’‚É•ÏŠ·‚·‚é
-				if (uc == 0) uc = alphaConv(charSize1Conv(jis, false), true);		// ‘SŠp‰p”š‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+				if (jis == 0x2121) uc = 0x20;										// å…¨è§’ç©ºç™½ã¯åŠè§’ç©ºç™½ã«å¤‰æ›ã™ã‚‹
+				if (uc == 0) uc = alphaConv(charSize1Conv(jis, false), true);		// å…¨è§’è‹±æ•°å­—ã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 				if (uc == 0) uc = jis12Conv(jis, true);
 				if (uc == 0) uc = jis3Conv(jis, true);
 				if (uc != 0) {
@@ -2256,15 +2264,15 @@ size_t convU32T_to_UTF16(char16_t *dbuf, const size_t maxbufsize, const uint32_t
 	dst--;
 	if (dst > maxbufsize) dst = maxbufsize;
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(char16_t’PˆÊ), I’[‚Ìnull•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(char16_tå˜ä½), çµ‚ç«¯ã®nullæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 
 size_t convU32T_to_UTF8(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *sbuf, const size_t total_length)
 {
 	//
-	// “à•”ˆ——p32bit•¶š—ñ‚ğAUTF-8•¶š—ñ‚É•ÏŠ·‚·‚é
-	// ‚»‚ÌÛA•¶šƒTƒCƒYw’è(C_HALF ‚ ‚é‚¢‚Í C_FULL)‚Í–³‹‚µA‘SŠp‰p”š‹y‚Ñ‹ó”’•¶š‚Í”¼Šp‚É•ÏŠ·‚·‚é
+	// å†…éƒ¨å‡¦ç†ç”¨32bitæ–‡å­—åˆ—ã‚’ã€UTF-8æ–‡å­—åˆ—ã«å¤‰æ›ã™ã‚‹
+	// ãã®éš›ã€æ–‡å­—ã‚µã‚¤ã‚ºæŒ‡å®š(C_HALF ã‚ã‚‹ã„ã¯ C_FULL)ã¯ç„¡è¦–ã—ã€å…¨è§’è‹±æ•°å­—åŠã³ç©ºç™½æ–‡å­—ã¯åŠè§’ã«å¤‰æ›ã™ã‚‹
 	//
 
 	size_t	dst = 0;
@@ -2285,9 +2293,9 @@ size_t convU32T_to_UTF8(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *
 			uc = jis;
 			if (uc == 0x0D) {
 #ifdef __USE_UTF_CODE_CRLF__
-				UTF8BUF2(0x0D);													// CRo—Í
+				UTF8BUF2(0x0D);													// CRå‡ºåŠ›
 #endif
-				UTF8BUF2(0x0A);													// LFo—Í
+				UTF8BUF2(0x0A);													// LFå‡ºåŠ›
 			}
 			else {
 				UTF8BUF2(uc);
@@ -2304,8 +2312,8 @@ size_t convU32T_to_UTF8(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *
 				UTF8BUF2(uc2);
 				break;
 			}
-			if (jis == 0x2121) uc = 0x20;										// ‘SŠp‹ó”’‚Í”¼Šp‹ó”’‚É•ÏŠ·‚·‚é
-			if (uc == 0) uc = alphaConv(charSize1Conv(jis, false), true);		// ‘SŠp‰p”š‚Í”¼Šp•¶š‚É•ÏŠ·‚·‚é
+			if (jis == 0x2121) uc = 0x20;										// å…¨è§’ç©ºç™½ã¯åŠè§’ç©ºç™½ã«å¤‰æ›ã™ã‚‹
+			if (uc == 0) uc = alphaConv(charSize1Conv(jis, false), true);		// å…¨è§’è‹±æ•°å­—ã¯åŠè§’æ–‡å­—ã«å¤‰æ›ã™ã‚‹
 			if (uc == 0) uc = jis12Conv(jis, true);
 			if (uc == 0) uc = jis3Conv(jis, true);
 			if (uc != 0) {
@@ -2357,18 +2365,18 @@ size_t convU32T_to_UTF8(uint8_t *dbuf, const size_t maxbufsize, const uint32_t *
 	dst--;
 	if (dst > maxbufsize) dst = maxbufsize;
 
-	return dst;			// •ÏŠ·Œã‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ), I’[‚Ìnull•¶š•ª‚ğŠÜ‚Ü‚È‚¢
+	return dst;			// å¤‰æ›å¾Œã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½), çµ‚ç«¯ã®nullæ–‡å­—åˆ†ã‚’å«ã¾ãªã„
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------
 
 int32_t alphaConv(const int32_t code, const bool bConvDir)
 {
-//	‰pšW‡•¶š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	è‹±å­—é›†åˆæ–‡å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	if( (code == 0x5C) && bConvDir ) return 0x00A5;				// jis 0x5C -> yen sign	
 	if( (code == 0x7E) && bConvDir ) return 0x203E;				// jis 0x7E -> overline
@@ -2376,7 +2384,7 @@ int32_t alphaConv(const int32_t code, const bool bConvDir)
 	if( (code == 0x00A5) && !bConvDir ) return 0x5C;			// yen sign -> jis 0x5C
 	if( (code == 0x203E) && !bConvDir ) return 0x7E;			// overline -> jis 0x7E
 
-	if( (code >= 0x21) && (code <= 0x7E) ) return code;			// ã‚Ì•¶šˆÈŠO‚Íjiscode‚Æunicode‚ª“¯ˆê‚Æ‚·‚é
+	if( (code >= 0x21) && (code <= 0x7E) ) return code;			// ä¸Šã®æ–‡å­—ä»¥å¤–ã¯jiscodeã¨unicodeãŒåŒä¸€ã¨ã™ã‚‹
 
 	return 0;
 }
@@ -2384,11 +2392,11 @@ int32_t alphaConv(const int32_t code, const bool bConvDir)
 
 int32_t jis12Conv(const int32_t code, const bool bConvDir)
 {
-//	JIS‘æˆê‘æ“ñ…€Š¿šC”ñŠ¿š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	JISç¬¬ä¸€ç¬¬äºŒæ°´æº–æ¼¢å­—ï¼Œéæ¼¢å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode (—á 0x2121 -> U+3000)
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode (ä¾‹ 0x2121 -> U+3000)
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2398,10 +2406,10 @@ int32_t jis12Conv(const int32_t code, const bool bConvDir)
 	}
 
 #ifdef _WIN32
-	int32_t		winResult = jis12WinConv(code, bConvDir);			// WINDOWSŒÅ—L‚Ìƒ}ƒbƒsƒ“ƒO‚ğ—L‚·‚é‚à‚Ì‚É‚Â‚¢‚Ä‚Ì•ÏŠ·
+	int32_t		winResult = jis12WinConv(code, bConvDir);			// WINDOWSå›ºæœ‰ã®ãƒãƒƒãƒ”ãƒ³ã‚°ã‚’æœ‰ã™ã‚‹ã‚‚ã®ã«ã¤ã„ã¦ã®å¤‰æ›
 	if(winResult != 0) return winResult;
 #else
-	if(!bConvDir) {													// ”ñWINDOWS‚Å‚ ‚Á‚Ä‚àAunicode->JIS•ÏŠ·‚Å‚Í WINDOWSŒÅ—L‚Ìƒ}ƒbƒsƒ“ƒO‚àæ‚è‚Ş
+	if(!bConvDir) {													// éWINDOWSã§ã‚ã£ã¦ã‚‚ã€unicode->JISå¤‰æ›ã§ã¯ WINDOWSå›ºæœ‰ã®ãƒãƒƒãƒ”ãƒ³ã‚°ã‚‚å–ã‚Šè¾¼ã‚€
 		int32_t		winResult = jis12WinConv(code, false);
 		if(winResult != 0) return winResult;
 	}
@@ -2423,11 +2431,11 @@ int32_t jis12Conv(const int32_t code, const bool bConvDir)
 
 int32_t jis12WinConv(const int32_t code, const bool bConvDir)
 {
-//	JIS‘æˆê‘æ“ñ…€”ñŠ¿š‚ÅwindowsŒÅ—L‚Ìƒ}ƒbƒsƒ“ƒO‚ğ—L‚·‚é‚à‚Ì‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	JISç¬¬ä¸€ç¬¬äºŒæ°´æº–éæ¼¢å­—ã§windowså›ºæœ‰ã®ãƒãƒƒãƒ”ãƒ³ã‚°ã‚’æœ‰ã™ã‚‹ã‚‚ã®ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2452,11 +2460,11 @@ int32_t jis12WinConv(const int32_t code, const bool bConvDir)
 
 int32_t jis3Conv(const int32_t code, const bool bConvDir)
 {
-//	JIS‘æO…€Š¿š”ñŠ¿š‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	JISç¬¬ä¸‰æ°´æº–æ¼¢å­—éæ¼¢å­—ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2481,16 +2489,16 @@ int32_t jis3Conv(const int32_t code, const bool bConvDir)
 
 size_t jis3CombAndIvsConv(const int32_t cType, const int32_t jis, int32_t *uc1, int32_t *uc2)
 {
-	//	JIS‘æO…€Š¿š”ñŠ¿š‚Åunicode‡¬•¶š‚É‘Î‰‚·‚é‚à‚Ì‚É‚Â‚¢‚Ä‚Ì jiscode -> unicode •¶š—ñ•ÏŠ·
-	//@‚¨‚æ‚Ñ
-	//@JIS‘æ1,2…€Š¿š, ’Ç‰ÁŠ¿š‚Ì‚¤‚¿AˆÙ‘ÌšƒZƒŒƒNƒ^[•t‚Åˆµ‚¤‚à‚Ì‚É‚Â‚¢‚Ä‚Ì jiscode -> unicode •¶š—ñ•ÏŠ·
-	//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î–ß‚è’l0‚ğ•Ô‚·
+	//	JISç¬¬ä¸‰æ°´æº–æ¼¢å­—éæ¼¢å­—ã§unicodeåˆæˆæ–‡å­—ã«å¯¾å¿œã™ã‚‹ã‚‚ã®ã«ã¤ã„ã¦ã® jiscode -> unicode æ–‡å­—åˆ—å¤‰æ›
+	//ã€€ãŠã‚ˆã³
+	//ã€€JISç¬¬1,2æ°´æº–æ¼¢å­—, è¿½åŠ æ¼¢å­—ã®ã†ã¡ã€ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ä»˜ã§æ‰±ã†ã‚‚ã®ã«ã¤ã„ã¦ã® jiscode -> unicode æ–‡å­—åˆ—å¤‰æ›
+	//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°æˆ»ã‚Šå€¤0ã‚’è¿”ã™
 	//
-	//	cType		•ÏŠ·Œ³•¶šíiF_JIS1KANJI, F_KIGOU)
-	//	jis			•ÏŠ·Œ³jiscode
-	//	uc1			•ÏŠ·‚µ‚½unicode‚Ì‘æ1•¶š
-	//	uc2			•ÏŠ·‚µ‚½unicode‚Ì‘æ2•¶š
-	//	–ß‚è’l		•ÏŠ·‚µ‚½unicode•¶š’·
+	//	cType		å¤‰æ›å…ƒæ–‡å­—ç¨®ï¼ˆF_JIS1KANJI, F_KIGOU)
+	//	jis			å¤‰æ›å…ƒjiscode
+	//	uc1			å¤‰æ›ã—ãŸunicodeã®ç¬¬1æ–‡å­—
+	//	uc2			å¤‰æ›ã—ãŸunicodeã®ç¬¬2æ–‡å­—
+	//	æˆ»ã‚Šå€¤		å¤‰æ›ã—ãŸunicodeæ–‡å­—é•·
 
 	static bool			bTableInitialized = false;
 
@@ -2513,16 +2521,16 @@ size_t jis3CombAndIvsConv(const int32_t cType, const int32_t jis, int32_t *uc1, 
 
 size_t jis3CombAndIvsRevConv(const int32_t uc1, const int32_t uc2, int32_t *cType, int32_t *jis)
 {
-	//	JIS‘æO…€Š¿š”ñŠ¿š‚Åunicode‡¬•¶š‚É‘Î‰‚·‚é‚à‚Ì‚É‚Â‚¢‚Ä‚Ì unicode -> jiscode •¶š—ñ•ÏŠ·
-	//@‚¨‚æ‚Ñ
-	//@JIS‘æ1,2…€Š¿š, ’Ç‰ÁŠ¿š‚Ì‚¤‚¿AˆÙ‘ÌšƒZƒŒƒNƒ^[•t‚Åˆµ‚¤‚à‚Ì‚É‚Â‚¢‚Ä‚Ì unicode -> jiscode •¶š—ñ•ÏŠ·
-	//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î–ß‚è’l0‚ğ•Ô‚·
+	//	JISç¬¬ä¸‰æ°´æº–æ¼¢å­—éæ¼¢å­—ã§unicodeåˆæˆæ–‡å­—ã«å¯¾å¿œã™ã‚‹ã‚‚ã®ã«ã¤ã„ã¦ã® unicode -> jiscode æ–‡å­—åˆ—å¤‰æ›
+	//ã€€ãŠã‚ˆã³
+	//ã€€JISç¬¬1,2æ°´æº–æ¼¢å­—, è¿½åŠ æ¼¢å­—ã®ã†ã¡ã€ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ä»˜ã§æ‰±ã†ã‚‚ã®ã«ã¤ã„ã¦ã® unicode -> jiscode æ–‡å­—åˆ—å¤‰æ›
+	//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°æˆ»ã‚Šå€¤0ã‚’è¿”ã™
 	//
-	//	uc1			•ÏŠ·Œ³unicode‚Ì‘æ1•¶š
-	//	uc2			•ÏŠ·Œ³unicode‚Ì‘æ2•¶š
-	//	cType		•ÏŠ·‚µ‚½•¶šíiF_JIS1KANJI, F_KIGOU)
-	//	jis			•ÏŠ·‚µ‚½jiscode
-	//	–ß‚è’l		•ÏŠ·‚µ‚½unicode•¶š’·
+	//	uc1			å¤‰æ›å…ƒunicodeã®ç¬¬1æ–‡å­—
+	//	uc2			å¤‰æ›å…ƒunicodeã®ç¬¬2æ–‡å­—
+	//	cType		å¤‰æ›ã—ãŸæ–‡å­—ç¨®ï¼ˆF_JIS1KANJI, F_KIGOU)
+	//	jis			å¤‰æ›ã—ãŸjiscode
+	//	æˆ»ã‚Šå€¤		å¤‰æ›ã—ãŸunicodeæ–‡å­—é•·
 
 	static bool			bTableInitialized = false;
 
@@ -2548,11 +2556,11 @@ size_t jis3CombAndIvsRevConv(const int32_t uc1, const int32_t uc2, int32_t *cTyp
 
 int32_t jis4Conv(const int32_t code, const bool bConvDir)
 {
-//	JIS‘æl…€Š¿š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	JISç¬¬å››æ°´æº–æ¼¢å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2577,11 +2585,11 @@ int32_t jis4Conv(const int32_t code, const bool bConvDir)
 
 int32_t hiragana1Conv(const int32_t code, const bool bConvDir)
 {
-//	‘SŠp‚Ğ‚ç‚ª‚È•¶š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	å…¨è§’ã²ã‚‰ãŒãªæ–‡å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2606,11 +2614,11 @@ int32_t hiragana1Conv(const int32_t code, const bool bConvDir)
 
 int32_t katakana1Conv(const int32_t code, const bool bConvDir)
 {
-//	‘SŠpƒJƒ^ƒJƒi•¶š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	å…¨è§’ã‚«ã‚¿ã‚«ãƒŠæ–‡å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2635,11 +2643,11 @@ int32_t katakana1Conv(const int32_t code, const bool bConvDir)
 
 int32_t kanaCommon1Conv(const int32_t code, const bool bConvDir)
 {
-//	‘SŠp‚Ğ‚ç‚ª‚ÈCƒJƒ^ƒJƒiW‡‚Ì‹¤’Ê•¶š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	å…¨è§’ã²ã‚‰ãŒãªï¼Œã‚«ã‚¿ã‚«ãƒŠé›†åˆã®å…±é€šæ–‡å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2664,11 +2672,11 @@ int32_t kanaCommon1Conv(const int32_t code, const bool bConvDir)
 
 int32_t hankaku1Conv(const int32_t code, const bool bConvDir)
 {
-//	JIS X0201ƒJƒ^ƒJƒi•¶šW‡‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	JIS X0201ã‚«ã‚¿ã‚«ãƒŠæ–‡å­—é›†åˆã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2693,11 +2701,11 @@ int32_t hankaku1Conv(const int32_t code, const bool bConvDir)
 
 int32_t kigou1Conv(const int32_t code, const bool bConvDir)
 {
-//	’Ç‰Á‹L†C’Ç‰ÁŠ¿šW‡‚Ì‚¤‚¿A‘Î‰‚·‚éunicode•¶š‚ª‘¶İ‚·‚é•¶š‚É‚Â‚¢‚Ä‚Ì jiscode <-> unicode•ÏŠ·
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//	è¿½åŠ è¨˜å·ï¼Œè¿½åŠ æ¼¢å­—é›†åˆã®ã†ã¡ã€å¯¾å¿œã™ã‚‹unicodeæ–‡å­—ãŒå­˜åœ¨ã™ã‚‹æ–‡å­—ã«ã¤ã„ã¦ã® jiscode <-> unicodeå¤‰æ›
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø”jiscode -> –ß‚è’lunicode
-//	bConvDir : false	ˆø”unicode -> –ß‚è’ljiscode
+//	bConvDir : true		å¼•æ•°jiscode -> æˆ»ã‚Šå€¤unicode
+//	bConvDir : false	å¼•æ•°unicode -> æˆ»ã‚Šå€¤jiscode
 
 	static bool		bTableInitialized = false;
 
@@ -2724,13 +2732,13 @@ int32_t kigou1Conv(const int32_t code, const bool bConvDir)
 
 size_t kigou2ConvUTF16(const int32_t jis, char16_t *dbuf, const size_t bufsize)
 {
-//	’Ç‰Á‹L†W‡‚Ì‚¤‚¿A‘Î‰‚·‚éunicode•¶š‚ª‘¶İ‚·‚é•¶š‚ª‘¶İ‚¹‚¸
-//	[...]‚ ‚é‚¢‚Í[#xx#xx]‚Å•\‚³‚ê‚é•¶š‚É‚Â‚¢‚Ä‚Ì jiscode -> UTF-16•¶š—ñ•ÏŠ·
+//	è¿½åŠ è¨˜å·é›†åˆã®ã†ã¡ã€å¯¾å¿œã™ã‚‹unicodeæ–‡å­—ãŒå­˜åœ¨ã™ã‚‹æ–‡å­—ãŒå­˜åœ¨ã›ãš
+//	[...]ã‚ã‚‹ã„ã¯[#xx#xx]ã§è¡¨ã•ã‚Œã‚‹æ–‡å­—ã«ã¤ã„ã¦ã® jiscode -> UTF-16æ–‡å­—åˆ—å¤‰æ›
 //
-//	jis			•ÏŠ·Œ³jiscode
-//	dbuf		•ÏŠ·‚µ‚½•¶š—ñ‚ª‘‚«‚Ü‚ê‚ébuf
-//  bufsize		•ÏŠ·ædbuf‚ÌÅ‘åƒTƒCƒY(char16_t’PˆÊ)
-//	–ß‚è’l		•ÏŠ·‚µ‚½UTF-16•¶š’·(char16_t’PˆÊ)
+//	jis			å¤‰æ›å…ƒjiscode
+//	dbuf		å¤‰æ›ã—ãŸæ–‡å­—åˆ—ãŒæ›¸ãè¾¼ã¾ã‚Œã‚‹buf
+//  bufsize		å¤‰æ›å…ˆdbufã®æœ€å¤§ã‚µã‚¤ã‚º(char16_tå˜ä½)
+//	æˆ»ã‚Šå€¤		å¤‰æ›ã—ãŸUTF-16æ–‡å­—é•·(char16_tå˜ä½)
     
 	size_t		len		= 0;
 	char16_t	jisbuf	= (char16_t)jis;
@@ -2763,13 +2771,13 @@ size_t kigou2ConvUTF16(const int32_t jis, char16_t *dbuf, const size_t bufsize)
 
 size_t kigou2ConvUTF8(const int32_t jis, uint8_t *dbuf, const size_t bufsize)
 {
-//	’Ç‰Á‹L†W‡‚Ì‚¤‚¿A‘Î‰‚·‚éunicode•¶š‚ª‘¶İ‚·‚é•¶š‚ª‘¶İ‚¹‚¸
-//	[...]‚ ‚é‚¢‚Í[#xx#xx]‚Å•\‚³‚ê‚é•¶š‚É‚Â‚¢‚Ä‚Ì jiscode -> UTF-8•¶š—ñ•ÏŠ·
+//	è¿½åŠ è¨˜å·é›†åˆã®ã†ã¡ã€å¯¾å¿œã™ã‚‹unicodeæ–‡å­—ãŒå­˜åœ¨ã™ã‚‹æ–‡å­—ãŒå­˜åœ¨ã›ãš
+//	[...]ã‚ã‚‹ã„ã¯[#xx#xx]ã§è¡¨ã•ã‚Œã‚‹æ–‡å­—ã«ã¤ã„ã¦ã® jiscode -> UTF-8æ–‡å­—åˆ—å¤‰æ›
 //
-//	jis			•ÏŠ·Œ³jiscode
-//	dbuf		•ÏŠ·‚µ‚½•¶š—ñ‚ª‘‚«‚Ü‚ê‚ébuf
-//  bufsize		•ÏŠ·ædbuf‚ÌÅ‘åƒTƒCƒY(uint8_t’PˆÊ)
-//	–ß‚è’l		•ÏŠ·‚µ‚½UTF-8•¶š’·(uint8_t’PˆÊ)
+//	jis			å¤‰æ›å…ƒjiscode
+//	dbuf		å¤‰æ›ã—ãŸæ–‡å­—åˆ—ãŒæ›¸ãè¾¼ã¾ã‚Œã‚‹buf
+//  bufsize		å¤‰æ›å…ˆdbufã®æœ€å¤§ã‚µã‚¤ã‚º(uint8_tå˜ä½)
+//	æˆ»ã‚Šå€¤		å¤‰æ›ã—ãŸUTF-8æ–‡å­—é•·(uint8_tå˜ä½)
 
 	size_t			len = 0;
 	uint8_t			jisbuf[2];
@@ -2806,13 +2814,13 @@ size_t kigou2ConvUTF8(const int32_t jis, uint8_t *dbuf, const size_t bufsize)
 
 size_t kigou2RevConvUTF16(const char16_t* sbuf, const size_t slen, int32_t *jis)
 {
-//	’Ç‰Á‹L†W‡‚Ì‚¤‚¿A‘Î‰‚·‚éunicode•¶š‚ª‘¶İ‚¹‚¸
-//	[...]‚ ‚é‚¢‚Í[#xx#xx]‚Å•\‚³‚ê‚é•¶š‚É‚Â‚¢‚Ä‚Ì UTF-16•¶š—ñ -> jiscode•ÏŠ·
+//	è¿½åŠ è¨˜å·é›†åˆã®ã†ã¡ã€å¯¾å¿œã™ã‚‹unicodeæ–‡å­—ãŒå­˜åœ¨ã›ãš
+//	[...]ã‚ã‚‹ã„ã¯[#xx#xx]ã§è¡¨ã•ã‚Œã‚‹æ–‡å­—ã«ã¤ã„ã¦ã® UTF-16æ–‡å­—åˆ— -> jiscodeå¤‰æ›
 //
-//	sbuf		•ÏŠ·Œ³buf
-//	slen		•ÏŠ·Œ³buf‚Ì’·‚³(char16_t’PˆÊ)
-//  jis			•ÏŠ·‚³‚ê‚½jisƒR[ƒh‚ª“ü‚é   
-//	–ß‚è’l		•ÏŠ·Œ³‚ÌUTF-16•¶š—ñ’·(char16_t’PˆÊ)
+//	sbuf		å¤‰æ›å…ƒbuf
+//	slen		å¤‰æ›å…ƒbufã®é•·ã•(char16_tå˜ä½)
+//  jis			å¤‰æ›ã•ã‚ŒãŸjisã‚³ãƒ¼ãƒ‰ãŒå…¥ã‚‹   
+//	æˆ»ã‚Šå€¤		å¤‰æ›å…ƒã®UTF-16æ–‡å­—åˆ—é•·(char16_tå˜ä½)
     
 	static bool		bTableInitialized = false;
     
@@ -2825,7 +2833,7 @@ size_t kigou2RevConvUTF16(const char16_t* sbuf, const size_t slen, int32_t *jis)
     
 	char16_t	cmpbuf[UTF16TABLELEN];	
 
-	if(slen < UTF16TABLELEN) {													// ”äŠr‚Ì•Ö‹X‚Ì‚½‚ß‚Éƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚éisbuf‚Ì”ÍˆÍŠO‚ğ“Ç‚İo‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ğ”ğ‚¯‚é‚½‚ßj
+	if(slen < UTF16TABLELEN) {													// æ¯”è¼ƒã®ä¾¿å®œã®ãŸã‚ã«ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ï¼ˆsbufã®ç¯„å›²å¤–ã‚’èª­ã¿å‡ºã—ã¦ã—ã¾ã†ã®ã‚’é¿ã‘ã‚‹ãŸã‚ï¼‰
 		memcpy(cmpbuf, sbuf, sizeof(char16_t) * slen);
 		cmpbuf[slen] = 0x0000;
 	}
@@ -2838,7 +2846,7 @@ size_t kigou2RevConvUTF16(const char16_t* sbuf, const size_t slen, int32_t *jis)
     {
 		size_t	len = cmpStrUTF16(srcbuf, (char16_t*)result + UTF16TABLELEN);
 
-		if(len != 0) {															// •¶š—ñ‚Ì•”•ªˆê’v‚Ì‰Â”\«‚ğœ‚­
+		if(len != 0) {															// æ–‡å­—åˆ—ã®éƒ¨åˆ†ä¸€è‡´ã®å¯èƒ½æ€§ã‚’é™¤ã
 			*jis = (int32_t)(*(char16_t*)result);
 			return len;
 		} 
@@ -2858,13 +2866,13 @@ size_t kigou2RevConvUTF16(const char16_t* sbuf, const size_t slen, int32_t *jis)
 
 size_t kigou2RevConvUTF8(const uint8_t* sbuf, const size_t slen, int32_t *jis)
 {
-//	’Ç‰Á‹L†W‡‚Ì‚¤‚¿A‘Î‰‚·‚éunicode•¶š‚ª‘¶İ‚¹‚¸
-//	[...]‚ ‚é‚¢‚Í[#xx#xx]‚Å•\‚³‚ê‚é•¶š‚É‚Â‚¢‚Ä‚Ì UTF-16•¶š—ñ -> jiscode•ÏŠ·
+//	è¿½åŠ è¨˜å·é›†åˆã®ã†ã¡ã€å¯¾å¿œã™ã‚‹unicodeæ–‡å­—ãŒå­˜åœ¨ã›ãš
+//	[...]ã‚ã‚‹ã„ã¯[#xx#xx]ã§è¡¨ã•ã‚Œã‚‹æ–‡å­—ã«ã¤ã„ã¦ã® UTF-16æ–‡å­—åˆ— -> jiscodeå¤‰æ›
 //
-//	sbuf		•ÏŠ·Œ³buf
-//	slen		•ÏŠ·Œ³buf‚Ì’·‚³(uint8_t’PˆÊ)
-//  jis			•ÏŠ·‚³‚ê‚½jisƒR[ƒh‚ª“ü‚é   
-//	–ß‚è’l		•ÏŠ·Œ³‚ÌUTF-8•¶š—ñ’·(uint8_t’PˆÊ)
+//	sbuf		å¤‰æ›å…ƒbuf
+//	slen		å¤‰æ›å…ƒbufã®é•·ã•(uint8_tå˜ä½)
+//  jis			å¤‰æ›ã•ã‚ŒãŸjisã‚³ãƒ¼ãƒ‰ãŒå…¥ã‚‹   
+//	æˆ»ã‚Šå€¤		å¤‰æ›å…ƒã®UTF-8æ–‡å­—åˆ—é•·(uint8_tå˜ä½)
 
 	static bool		bTableInitialized = false;
     
@@ -2877,7 +2885,7 @@ size_t kigou2RevConvUTF8(const uint8_t* sbuf, const size_t slen, int32_t *jis)
 
 	uint8_t	cmpbuf[UTF8TABLELEN];	
 
-	if(slen < UTF8TABLELEN) {													// ”äŠr‚Ì•Ö‹X‚Ì‚½‚ß‚Éƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚éisbuf‚Ì”ÍˆÍŠO‚ğ“Ç‚İo‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ğ”ğ‚¯‚é‚½‚ßj
+	if(slen < UTF8TABLELEN) {													// æ¯”è¼ƒã®ä¾¿å®œã®ãŸã‚ã«ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ï¼ˆsbufã®ç¯„å›²å¤–ã‚’èª­ã¿å‡ºã—ã¦ã—ã¾ã†ã®ã‚’é¿ã‘ã‚‹ãŸã‚ï¼‰
 		memcpy(cmpbuf, sbuf, sizeof(uint8_t) * slen);
 		cmpbuf[slen] = 0x0000;
 	}
@@ -2890,7 +2898,7 @@ size_t kigou2RevConvUTF8(const uint8_t* sbuf, const size_t slen, int32_t *jis)
     {
 		size_t	len = cmpStrUTF8(srcbuf, (uint8_t*)result + UTF8TABLELEN);
 
-		if(len != 0) {															// •¶š—ñ‚Ì•”•ªˆê’v‚Ì‰Â”\«‚ğœ‚­
+		if(len != 0) {															// æ–‡å­—åˆ—ã®éƒ¨åˆ†ä¸€è‡´ã®å¯èƒ½æ€§ã‚’é™¤ã
 			*jis = *((uint8_t*)result) * 256 + *((uint8_t*)result + 1);
 			return len;
 		} 
@@ -2910,12 +2918,12 @@ size_t kigou2RevConvUTF8(const uint8_t* sbuf, const size_t slen, int32_t *jis)
 
 int32_t charSize1Conv(const int32_t jis, const bool bConvDir)
 {
-//@‹ó”’•¶š‹y‚Ñ‰p”•¶š‚Ì ”¼Špjiscode <-> ‘SŠpjiscode •ÏŠ·
-//@—áFA(0x41) <-> ‚`(0x2341)
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//ã€€ç©ºç™½æ–‡å­—åŠã³è‹±æ•°æ–‡å­—ã® åŠè§’jiscode <-> å…¨è§’jiscode å¤‰æ›
+//ã€€ä¾‹ï¼šA(0x41) <-> ï¼¡(0x2341)
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø””¼Špjiscode -> –ß‚è’l‘SŠpjiscode
-//	bConvDir : false	ˆø”‘SŠpjiscode -> –ß‚è’l”¼Špjiscode
+//	bConvDir : true		å¼•æ•°åŠè§’jiscode -> æˆ»ã‚Šå€¤å…¨è§’jiscode
+//	bConvDir : false	å¼•æ•°å…¨è§’jiscode -> æˆ»ã‚Šå€¤åŠè§’jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2940,12 +2948,12 @@ int32_t charSize1Conv(const int32_t jis, const bool bConvDir)
 
 int32_t charSize2Conv(const int32_t jis, const bool bConvDir)
 {
-//@JISX0201•Ğ‰¼–¼i‚¢‚í‚ä‚é”¼ŠpƒJƒij‚ÉŠÖ‚·‚éA”¼Špjiscode <-> ‘SŠpjiscode •ÏŠ·
-//@—áF±(0x31) <-> ƒA(0x2522)
-//	‘Î‰‚·‚é•¶šƒR[ƒh‚ª‚È‚¯‚ê‚Î0‚ğ•Ô‚·
+//ã€€JISX0201ç‰‡ä»®åï¼ˆã„ã‚ã‚†ã‚‹åŠè§’ã‚«ãƒŠï¼‰ã«é–¢ã™ã‚‹ã€åŠè§’jiscode <-> å…¨è§’jiscode å¤‰æ›
+//ã€€ä¾‹ï¼šã‚¢(0x31) <-> ã‚¢(0x2522)
+//	å¯¾å¿œã™ã‚‹æ–‡å­—ã‚³ãƒ¼ãƒ‰ãŒãªã‘ã‚Œã°0ã‚’è¿”ã™
 //
-//	bConvDir : true		ˆø””¼Špjiscode -> –ß‚è’l‘SŠpjiscode
-//	bConvDir : false	ˆø”‘SŠpjiscode -> –ß‚è’l”¼Špjiscode
+//	bConvDir : true		å¼•æ•°åŠè§’jiscode -> æˆ»ã‚Šå€¤å…¨è§’jiscode
+//	bConvDir : false	å¼•æ•°å…¨è§’jiscode -> æˆ»ã‚Šå€¤åŠè§’jiscode
 
 	static bool			bTableInitialized = false;
 
@@ -2968,7 +2976,7 @@ int32_t charSize2Conv(const int32_t jis, const bool bConvDir)
 }
 
 
-void initRevTable(const int32_t *tabletop, int32_t *revtop, const size_t tablesize)		// •ÏŠ·ƒe[ƒuƒ‹‰Šú‰»—p
+void initRevTable(const int32_t *tabletop, int32_t *revtop, const size_t tablesize)		// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«åˆæœŸåŒ–ç”¨
 {
 	const size_t	num = tablesize / sizeof(int32_t) / 2;
 		
@@ -2983,13 +2991,13 @@ void initRevTable(const int32_t *tabletop, int32_t *revtop, const size_t tablesi
 }
 
 
-int compareForTable(const void *item1, const void *item2)						// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable(const void *item1, const void *item2)						// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 {
 	return *(int32_t*)item1 - *(int32_t*)item2;
 }
 
 
-int compareForTable64(const void *item1, const void *item2)						// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable64(const void *item1, const void *item2)						// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 {
 	int64_t	diff = *(int64_t*)item1 - *(int64_t*)item2;
 
@@ -3004,7 +3012,7 @@ int compareForTable64(const void *item1, const void *item2)						// •ÏŠ·ƒe[ƒuƒ‹
 }
 
 
-int compareForTable64Rev(const void *item1, const void *item2)					// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable64Rev(const void *item1, const void *item2)					// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 {
 	int64_t diff = *((int64_t*)item1 + 1) - *((int64_t*)item2 + 1);
 
@@ -3019,19 +3027,19 @@ int compareForTable64Rev(const void *item1, const void *item2)					// •ÏŠ·ƒe[ƒu
 }
 
 
-int compareForTable2UTF16(const void *item1, const void *item2)					// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable2UTF16(const void *item1, const void *item2)					// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 {
 	return (int)(*(char16_t*)item1) - (int)(*(char16_t*)item2);
 }
 
 
-int compareForTable2UTF8(const void *item1, const void *item2)					// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable2UTF8(const void *item1, const void *item2)					// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 {
 	return *(uint8_t*)item1 * 256 + *((uint8_t*)item1 + 1) - *(uint8_t*)item2 * 256 - *((uint8_t*)item2 + 1);
 }
 
 
-int compareForTable2StrUTF16(const void *item1, const void *item2)				// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable2StrUTF16(const void *item1, const void *item2)				// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 { 
     char16_t *str1 = (char16_t*)item1 + UTF16TABLELEN;
     char16_t *str2 = (char16_t*)item2 + UTF16TABLELEN;
@@ -3047,7 +3055,7 @@ int compareForTable2StrUTF16(const void *item1, const void *item2)				// •ÏŠ·ƒe
 }
 
 
-int compareForTable2StrUTF8(const void *item1, const void *item2)				// •ÏŠ·ƒe[ƒuƒ‹ƒ\[ƒgCŒŸõ—pŠÖ”
+int compareForTable2StrUTF8(const void *item1, const void *item2)				// å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«ã‚½ãƒ¼ãƒˆï¼Œæ¤œç´¢ç”¨é–¢æ•°
 { 
     uint8_t *str1 = (uint8_t*)item1 + UTF8TABLELEN;
     uint8_t *str2 = (uint8_t*)item2 + UTF8TABLELEN;
@@ -3065,9 +3073,9 @@ int compareForTable2StrUTF8(const void *item1, const void *item2)				// •ÏŠ·ƒe[
 
 size_t cmpStrUTF16(const char16_t* src, const char16_t* dst)
 {
-// •¶š—ñsrc‚ª•¶š—ñdst‚Æˆê’v‚µ‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN‚µAˆê’v‚µ‚Ä‚¢‚é‚È‚ç‚»‚Ì’·‚³‚ğ•Ô‚·(char16_t’PˆÊ)
-// dst‘¤‚Í0x0000‚ÅI’[‚·‚é•¶š—ñ
-// src‘¤‚Í0x0000‚ÅI’[‚µ‚Ä‚¢‚é•K—v‚Í‚È‚¢
+// æ–‡å­—åˆ—srcãŒæ–‡å­—åˆ—dstã¨ä¸€è‡´ã—ã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ã—ã€ä¸€è‡´ã—ã¦ã„ã‚‹ãªã‚‰ãã®é•·ã•ã‚’è¿”ã™(char16_tå˜ä½)
+// dstå´ã¯0x0000ã§çµ‚ç«¯ã™ã‚‹æ–‡å­—åˆ—
+// srcå´ã¯0x0000ã§çµ‚ç«¯ã—ã¦ã„ã‚‹å¿…è¦ã¯ãªã„
 
 	size_t		len	= 0;
 
@@ -3086,9 +3094,9 @@ size_t cmpStrUTF16(const char16_t* src, const char16_t* dst)
 
 size_t cmpStrUTF8(const uint8_t* src, const uint8_t* dst)
 {
-// •¶š—ñsrc‚ª•¶š—ñdst‚Æˆê’v‚µ‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN‚µAˆê’v‚µ‚Ä‚¢‚é‚È‚ç‚»‚Ì’·‚³‚ğ•Ô‚·(uint8_t’PˆÊ)
-// dst‘¤‚Í0x0000‚ÅI’[‚·‚é•¶š—ñ
-// src‘¤‚Í0x0000‚ÅI’[‚µ‚Ä‚¢‚é•K—v‚Í‚È‚¢
+// æ–‡å­—åˆ—srcãŒæ–‡å­—åˆ—dstã¨ä¸€è‡´ã—ã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ã—ã€ä¸€è‡´ã—ã¦ã„ã‚‹ãªã‚‰ãã®é•·ã•ã‚’è¿”ã™(uint8_tå˜ä½)
+// dstå´ã¯0x0000ã§çµ‚ç«¯ã™ã‚‹æ–‡å­—åˆ—
+// srcå´ã¯0x0000ã§çµ‚ç«¯ã—ã¦ã„ã‚‹å¿…è¦ã¯ãªã„
 
 	size_t		len	= 0;
 
@@ -3390,12 +3398,12 @@ void writeBuf(uint8_t *dbuf, const size_t maxbufsize, const size_t dst, const ui
 
 size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 {
-// §ŒäƒR[ƒh‚É]‚Á‚Ä•„†‚ÌŒÄ‚Ño‚µAw¦§Œä‚·‚é
+// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰ã«å¾“ã£ã¦ç¬¦å·ã®å‘¼ã³å‡ºã—ã€æŒ‡ç¤ºåˆ¶å¾¡ã™ã‚‹
 // 
 
 	uint8_t		tmpbuf[MAXCONTROLSEQUENCE];	
 
-	if(slen < MAXCONTROLSEQUENCE) {													// ”äŠr‚Ì•Ö‹X‚Ì‚½‚ß‚Éƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚éisbuf‚Ì”ÍˆÍŠO‚ğ“Ç‚İo‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ğ”ğ‚¯‚é‚½‚ßj
+	if(slen < MAXCONTROLSEQUENCE) {													// æ¯”è¼ƒã®ä¾¿å®œã®ãŸã‚ã«ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ï¼ˆsbufã®ç¯„å›²å¤–ã‚’èª­ã¿å‡ºã—ã¦ã—ã¾ã†ã®ã‚’é¿ã‘ã‚‹ãŸã‚ï¼‰
 		memcpy(tmpbuf, srcbuf, sizeof(uint8_t) * slen);
 		tmpbuf[slen] = 0x00;
 	}
@@ -3405,68 +3413,68 @@ size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 
 	switch(sbuf[0])
 	{
-		// •¶šƒTƒCƒYw’è
+		// æ–‡å­—ã‚µã‚¤ã‚ºæŒ‡å®š
 
 		case 0x89:
-			status->bNormalSize = false;					// •¶šƒTƒCƒY”¼Šp(MSZ)w’è
+			status->bNormalSize = false;					// æ–‡å­—ã‚µã‚¤ã‚ºåŠè§’(MSZ)æŒ‡å®š
 			len = 1;
 			break;
 		case 0x8A:
-			status->bNormalSize = true;						// •¶šƒTƒCƒY‘SŠp(NSZ)w’è
+			status->bNormalSize = true;						// æ–‡å­—ã‚µã‚¤ã‚ºå…¨è§’(NSZ)æŒ‡å®š
 			len = 1;
 			break;
 
-		// •„†‚ÌŒÄ‚Ño‚µ
+		// ç¬¦å·ã®å‘¼ã³å‡ºã—
 
-		case 0x0F:											// LS0 (0F), G0->GL ƒƒbƒLƒ“ƒOƒVƒtƒg
+		case 0x0F:											// LS0 (0F), G0->GL ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 			status->region[REGION_GL]	= BANK_G0;
 			len = 1;
 			break;
-		case 0x0E:											// LS1 (0E), G1->GL ƒƒbƒLƒ“ƒOƒVƒtƒg
+		case 0x0E:											// LS1 (0E), G1->GL ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 			status->region[REGION_GL]	= BANK_G1;
 			len = 1;
 			break;
-		case 0x19:														// SS2 (19), G2->GL ƒVƒ“ƒOƒ‹ƒVƒtƒg
+		case 0x19:														// SS2 (19), G2->GL ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ
 			status->region_GL_backup	= status->region[REGION_GL];
 			status->region[REGION_GL]	= BANK_G2;
 			status->bSingleShift		= true;
 			len = 1;
 			break;
-		case 0x1D:														// SS3 (1D), G3->GL ƒVƒ“ƒOƒ‹ƒVƒtƒg
+		case 0x1D:														// SS3 (1D), G3->GL ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ
 			status->region_GL_backup	= status->region[REGION_GL];
 			status->region[REGION_GL]	= BANK_G3;
 			status->bSingleShift		= true;
 			len = 1;
 			break;
 
-		case 0x1B:		// ESC‚É‘±‚­§ŒäƒR[ƒh
+		case 0x1B:		// ESCã«ç¶šãåˆ¶å¾¡ã‚³ãƒ¼ãƒ‰
 
 			switch(sbuf[1])
 			{
-				// ESC‚É‘±‚­•„†‚ÌŒÄ‚Ño‚µ
+				// ESCã«ç¶šãç¬¦å·ã®å‘¼ã³å‡ºã—
 				
-				case 0x6E:									// LS2 (ESC 6E), G2->GL ƒƒbƒLƒ“ƒOƒVƒtƒg
+				case 0x6E:									// LS2 (ESC 6E), G2->GL ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 					status->region[REGION_GL] = BANK_G2;
 					len = 2;
 					break;
-				case 0x6F:									// LS3 (ESC 6F), G3->GL ƒƒbƒLƒ“ƒOƒVƒtƒg
+				case 0x6F:									// LS3 (ESC 6F), G3->GL ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 					status->region[REGION_GL] = BANK_G3;
 					len = 2;
 					break;
-				case 0x7E:									// LS1R (ESC 7E), G1->GR ƒƒbƒLƒ“ƒOƒVƒtƒg
+				case 0x7E:									// LS1R (ESC 7E), G1->GR ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 					status->region[REGION_GR] = BANK_G1;
 					len = 2;
 					break;
-				case 0x7D:									// LS2R (ESC 7D), G2->GR ƒƒbƒLƒ“ƒOƒVƒtƒg
+				case 0x7D:									// LS2R (ESC 7D), G2->GR ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 					status->region[REGION_GR] = BANK_G2;
 					len = 2;
 					break;
-				case 0x7C:									// LS3R (ESC 7C), G3->GR ƒƒbƒLƒ“ƒOƒVƒtƒg
+				case 0x7C:									// LS3R (ESC 7C), G3->GR ãƒ­ãƒƒã‚­ãƒ³ã‚°ã‚·ãƒ•ãƒˆ
 					status->region[REGION_GR] = BANK_G3;
 					len = 2;
 					break;
 
-				// ESC‚É‘±‚­•„†‚Ìw¦§Œä
+				// ESCã«ç¶šãç¬¦å·ã®æŒ‡ç¤ºåˆ¶å¾¡
 
 				case 0x28:	// ESC 28
 				case 0x29:	// ESC 29
@@ -3474,28 +3482,28 @@ size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 				case 0x2B:	// ESC 2B
 					if(isOneByteGSET(sbuf[2]))
 					{
-						status->bank[numGBank(sbuf[1])] = sbuf[2];								// 1ƒoƒCƒgGSETw¦ (ESC 28|29|2A|2B [F]) -> G0,G1,G2,G3
+						status->bank[numGBank(sbuf[1])] = sbuf[2];								// 1ãƒã‚¤ãƒˆGSETæŒ‡ç¤º (ESC 28|29|2A|2B [F]) -> G0,G1,G2,G3
 						len = 3;
 					} 
 					else if(sbuf[2] == 0x20)
 					{
 						if(isOneByteDRCS(sbuf[3])) {
-							status->bank[numGBank(sbuf[1])] = sbuf[3] + 0x100;					// 1ƒoƒCƒgDRCSw¦ (ESC 28|29|2A|2B 20 [F]) -> G0,G1,G2,G3		
-							len = 4;															// + 0x100‚ÍI’[•„†‚ª”í‚ç‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß‚Ì×H
+							status->bank[numGBank(sbuf[1])] = sbuf[3] + 0x100;					// 1ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 28|29|2A|2B 20 [F]) -> G0,G1,G2,G3		
+							len = 4;															// + 0x100ã¯çµ‚ç«¯ç¬¦å·ãŒè¢«ã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹ãŸã‚ã®ç´°å·¥
 						} else {
-							len = 4;															// •s–¾‚È1ƒoƒCƒgDRCSw¦ (ESC 28|29|2A|2B 20 XX)
+							len = 4;															// ä¸æ˜ãª1ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 28|29|2A|2B 20 XX)
 						}
 					}
 					else
 					{
-						len = 3;																// •s–¾‚È1ƒoƒCƒgGSETw¦ (ESC 28|29|2A|2B XX)
+						len = 3;																// ä¸æ˜ãª1ãƒã‚¤ãƒˆGSETæŒ‡ç¤º (ESC 28|29|2A|2B XX)
 					}
 					break;
 
 				case 0x24:	// ESC 24
 					if(isTwoByteGSET(sbuf[2]))
 					{
-						status->bank[BANK_G0] = sbuf[2];										// 2ƒoƒCƒgGSETw¦ (ESC 24 [F]) ->G0
+						status->bank[BANK_G0] = sbuf[2];										// 2ãƒã‚¤ãƒˆGSETæŒ‡ç¤º (ESC 24 [F]) ->G0
 						len = 3;
 					}
 					else
@@ -3506,15 +3514,15 @@ size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 								if(sbuf[3] == 0x20)
 								{
 									if(isTwoByteDRCS(sbuf[4])) {
-										status->bank[BANK_G0] = sbuf[4];						// 2ƒoƒCƒgDRCSw¦ (ESC 24 28 20 [F]) ->G0
+										status->bank[BANK_G0] = sbuf[4];						// 2ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 24 28 20 [F]) ->G0
 										len = 5;
 									} else {
-										len = 5;												// •s–¾‚È2ƒoƒCƒgDRCSw¦ (ESC 24 28 20 XX)
+										len = 5;												// ä¸æ˜ãª2ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 24 28 20 XX)
 									}
 								}
 								else
 								{
-									len = 4;													// •s–¾‚Èw¦ (ESC 24 28 XX)
+									len = 4;													// ä¸æ˜ãªæŒ‡ç¤º (ESC 24 28 XX)
 								}
 								break;
 							case 0x29:	// ESC 24 29
@@ -3522,35 +3530,35 @@ size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 							case 0x2B:	// ESC 24 2B
 								if(isTwoByteGSET(sbuf[3]))
 								{
-									status->bank[numGBank(sbuf[2])] = sbuf[3];					// 2ƒoƒCƒgGSETw¦ (ESC 24 29|2A|2B [F]) ->G1,G2,G3
+									status->bank[numGBank(sbuf[2])] = sbuf[3];					// 2ãƒã‚¤ãƒˆGSETæŒ‡ç¤º (ESC 24 29|2A|2B [F]) ->G1,G2,G3
 									len = 4;
 								} 
 								else if(sbuf[3] == 0x20)
 								{
 									if(isTwoByteDRCS(sbuf[4])) {
-										status->bank[numGBank(sbuf[2])] = sbuf[4];				// 2ƒoƒCƒgDRCSw¦ (ESC 24 29|2A|2B 20 [F]) ->G1,G2,G3
+										status->bank[numGBank(sbuf[2])] = sbuf[4];				// 2ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 24 29|2A|2B 20 [F]) ->G1,G2,G3
 										len = 5;
 									} else {
-										len = 5;												// •s–¾‚È2ƒoƒCƒgDRCSw¦ (ESC 24 29|2A|2B 20 XX)
+										len = 5;												// ä¸æ˜ãª2ãƒã‚¤ãƒˆDRCSæŒ‡ç¤º (ESC 24 29|2A|2B 20 XX)
 									}
 								}
 								else
 								{
-									len= 4;														// •s–¾‚È2ƒoƒCƒgGSETw¦ (ESC 24 29|2A|2B XX)
+									len= 4;														// ä¸æ˜ãª2ãƒã‚¤ãƒˆGSETæŒ‡ç¤º (ESC 24 29|2A|2B XX)
 								}
 								break;
 							default:
-								len= 3;															// •s–¾‚Èw¦ (ESC 24 XX)
+								len= 3;															// ä¸æ˜ãªæŒ‡ç¤º (ESC 24 XX)
 						}
 					}
 					break;
 
 				default:
-					len = 2;																	// •s–¾‚Èw¦ (ESC XX)
+					len = 2;																	// ä¸æ˜ãªæŒ‡ç¤º (ESC XX)
 			}
 			break;
 
-		default:	// ã‹LˆÈŠO‚Ì§ŒäƒR[ƒh
+		default:	// ä¸Šè¨˜ä»¥å¤–ã®åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰
 			len = 1;
 	}
 
@@ -3560,9 +3568,9 @@ size_t changeConvStatus(const uint8_t *srcbuf, size_t slen, ConvStatus *status)
 
 size_t csiProc(const uint8_t *sbuf, size_t slen, ConvStatus *status)
 {
-// CSI§ŒäƒR[ƒhˆ—
+// CSIåˆ¶å¾¡ã‚³ãƒ¼ãƒ‰å‡¦ç†
 // 
-// XCS‚Ìˆ—‚Ì‚İ
+// XCSã®å‡¦ç†ã®ã¿
 
 	int32_t		param[4];
 	memset(param, 0, sizeof(param));	
@@ -3575,26 +3583,26 @@ size_t csiProc(const uint8_t *sbuf, size_t slen, ConvStatus *status)
 	
 	while(src < slen)
 	{
-		if( isdigit(sbuf[src]) ) {											// ƒpƒ‰ƒ[ƒ^?
+		if( isdigit(sbuf[src]) ) {											// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿?
 			param[numParam] = param[numParam] * 10 + (sbuf[src] - '0');
 			src++;
 		}
-		else if(sbuf[src] == 0x3B) {										// ƒpƒ‰ƒ[ƒ^‹æØ‚è?
+		else if(sbuf[src] == 0x3B) {										// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿åŒºåˆ‡ã‚Š?
 			numParam++;
 			src++;
-			if(numParam == 5) break;										// ƒpƒ‰ƒ[ƒ^‘½‚·‚¬
+			if(numParam == 5) break;										// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¤šã™ã
 		}
-		else if(sbuf[src] == 0x20) {										// ƒpƒ‰ƒ[ƒ^I—¹?
+		else if(sbuf[src] == 0x20) {										// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿çµ‚äº†?
 			numParam++;
 			bParamEnd = true;
 			src++;
 		}
-		else if( (sbuf[src] >= 0x42) && (sbuf[src] <= 0x6F) ) {				// I’[•¶š?
+		else if( (sbuf[src] >= 0x42) && (sbuf[src] <= 0x6F) ) {				// çµ‚ç«¯æ–‡å­—?
 			charClass = sbuf[src];
 			src++;
 			break;
 		}
-		else {																// •s³‚ÈƒR[ƒh
+		else {																// ä¸æ­£ãªã‚³ãƒ¼ãƒ‰
 			src++;
 			break;
 		}
@@ -3604,11 +3612,11 @@ size_t csiProc(const uint8_t *sbuf, size_t slen, ConvStatus *status)
 	{
 		case	0x66:													// XCS
 			if( bParamEnd && (numParam == 1) && (param[0] == 0) ) {
-				status->bXCS = true;										// ŠOš‘ã‘Ö•„†’è‹`ŠJn
+				status->bXCS = true;										// å¤–å­—ä»£æ›¿ç¬¦å·å®šç¾©é–‹å§‹
 				break;
 			}
 			if( bParamEnd && (numParam == 1) && (param[0] == 1) ) {
-				status->bXCS = false;										// ŠOš‘ã‘Ö•„†’è‹`I—¹
+				status->bXCS = false;										// å¤–å­—ä»£æ›¿ç¬¦å·å®šç¾©çµ‚äº†
 				break;
 			}
 			break;
@@ -3623,8 +3631,8 @@ size_t csiProc(const uint8_t *sbuf, size_t slen, ConvStatus *status)
 
 void defaultMacroProc(const uint8_t c, ConvStatus *status)
 {
-// ƒfƒtƒHƒ‹ƒgƒ}ƒNƒ‚Ìˆ—
-// ”Ô‘gî•ñ(SI)‚Å‚Íg—p‚³‚ê‚È‚¢
+// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒã‚¯ãƒ­ã®å‡¦ç†
+// ç•ªçµ„æƒ…å ±(SI)ã§ã¯ä½¿ç”¨ã•ã‚Œãªã„
 
 	switch(c)
 	{
@@ -3766,17 +3774,17 @@ void defaultMacroProc(const uint8_t c, ConvStatus *status)
 
 int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jisCode, size_t *charLen)
 {
-//	unicode•¶ší‚ğ”»’è‚·‚é
+//	unicodeæ–‡å­—ç¨®ã‚’åˆ¤å®šã™ã‚‹
 //
-//	sbuf		”»’f‚·‚é•¶šbuf
-//	slen		•ÏŠ·Œ³buf‚Ì’·‚³(char16_t’PˆÊ)	
-//	–ß‚è’l		”»’fŒ‹‰Ê‚Ì•¶ší(F_CONTROL, F_ALPHA, c)
-//	jisCode		Œ‹‰Ê‚Ìjiscode‚ª“ü‚é
-//	charLen		Œ‹‰Ê‚ÌUTF-16•¶š’·(char16_t’PˆÊ)‚ª“ü‚é
+//	sbuf		åˆ¤æ–­ã™ã‚‹æ–‡å­—buf
+//	slen		å¤‰æ›å…ƒbufã®é•·ã•(char16_tå˜ä½)	
+//	æˆ»ã‚Šå€¤		åˆ¤æ–­çµæœã®æ–‡å­—ç¨®(F_CONTROL, F_ALPHA, â€¦)
+//	jisCode		çµæœã®jiscodeãŒå…¥ã‚‹
+//	charLen		çµæœã®UTF-16æ–‡å­—é•·(char16_tå˜ä½)ãŒå…¥ã‚‹
 
 	char16_t	cmpbuf[UTF16TABLELEN] = { 0 };
 
-	if(slen < UTF16TABLELEN) {													// ”äŠr‚Ì•Ö‹X‚Ì‚½‚ß‚Éƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚éisbuf‚Ì”ÍˆÍŠO‚ğ“Ç‚İo‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ğ”ğ‚¯‚é‚½‚ßj
+	if(slen < UTF16TABLELEN) {													// æ¯”è¼ƒã®ä¾¿å®œã®ãŸã‚ã«ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ï¼ˆsbufã®ç¯„å›²å¤–ã‚’èª­ã¿å‡ºã—ã¦ã—ã¾ã†ã®ã‚’é¿ã‘ã‚‹ãŸã‚ï¼‰
 		memcpy(cmpbuf, srcbuf, sizeof(char16_t) * slen);
 		cmpbuf[slen] = 0x0000;
 	}
@@ -3788,10 +3796,10 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	int32_t		uc		= sbuf[0];
 
 
-	if( (uc >= 0xD800) && (uc <= 0xDBFF) )										// ƒTƒƒQ[ƒgƒyƒAH
+	if( (uc >= 0xD800) && (uc <= 0xDBFF) )										// ã‚µãƒ­ã‚²ãƒ¼ãƒˆãƒšã‚¢ï¼Ÿ
 	{
 		int32_t		uc1 = sbuf[1];
-		if( (uc1 >= 0xDC00) && (uc1 <= 0xDFFF) ) {								// ƒTƒƒQ[ƒgƒyƒA‚Ì“ñ•¶š–Úƒ`ƒFƒbƒN
+		if( (uc1 >= 0xDC00) && (uc1 <= 0xDFFF) ) {								// ã‚µãƒ­ã‚²ãƒ¼ãƒˆãƒšã‚¢ã®äºŒæ–‡å­—ç›®ãƒã‚§ãƒƒã‚¯
 			uc = ((uc - 0xD800) << 10) + (uc1 - 0xDC00) + 0x10000;
 			clen = 2;
 		} else {
@@ -3802,12 +3810,12 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 	size_t		clen2	= 1;
-	int32_t		uc2		= sbuf[clen];											// Œ‹‡•¶š‚ÆˆÙ‘ÌšƒZƒŒƒNƒ^‚Ìƒ`ƒFƒbƒN‚Ì‚½‚ßAŸ‚Ì•¶š‚àæ“¾‚·‚é
+	int32_t		uc2		= sbuf[clen];											// çµåˆæ–‡å­—ã¨ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã®ãƒã‚§ãƒƒã‚¯ã®ãŸã‚ã€æ¬¡ã®æ–‡å­—ã‚‚å–å¾—ã™ã‚‹
 
-	if ((uc2 >= 0xD800) && (uc2 <= 0xDBFF))										// ƒTƒƒQ[ƒgƒyƒAH
+	if ((uc2 >= 0xD800) && (uc2 <= 0xDBFF))										// ã‚µãƒ­ã‚²ãƒ¼ãƒˆãƒšã‚¢ï¼Ÿ
 	{
 		int32_t		uc3 = sbuf[clen + 1];
-		if ((uc3 >= 0xDC00) && (uc3 <= 0xDFFF)) {								// ƒTƒƒQ[ƒgƒyƒA‚Ì“ñ•¶š–Úƒ`ƒFƒbƒN
+		if ((uc3 >= 0xDC00) && (uc3 <= 0xDFFF)) {								// ã‚µãƒ­ã‚²ãƒ¼ãƒˆãƒšã‚¢ã®äºŒæ–‡å­—ç›®ãƒã‚§ãƒƒã‚¯
 			uc2 = ((uc2 - 0xD800) << 10) + (uc3 - 0xDC00) + 0x10000;
 			clen2 = 2;
 		}
@@ -3819,7 +3827,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	int32_t		cType;
 
 
-	// §ŒäƒR[ƒh (SPŠÜ‚Ş)
+	// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰ (SPå«ã‚€)
 
 	if(isUcControlChar(uc)) {
 		*jisCode	= uc;
@@ -3828,7 +3836,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// '['‚©‚çn‚Ü‚é’Ç‰Á‹L†W‡
+	// '['ã‹ã‚‰å§‹ã¾ã‚‹è¿½åŠ è¨˜å·é›†åˆ
     
 	if(uc == '[') {
 		if( (len = kigou2RevConvUTF16(sbuf, UTF16TABLELEN, &code)) != 0) {
@@ -3839,7 +3847,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‰p”W‡
+	// è‹±æ•°é›†åˆ
 	
 	code = alphaConv(uc, false);
 	if(code != 0) {
@@ -3849,8 +3857,8 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‘æO…€”ñŠ¿š‚Ìunicode‡¬•¶š‚ÉŠY“–‚·‚é‚à‚Ì
-	// ‘æ1,2…€Š¿š, ’Ç‰ÁŠ¿š‚ÌˆÙ‘ÌšƒZƒŒƒNƒ^‚ğg—p‚·‚é‚à‚Ì
+	// ç¬¬ä¸‰æ°´æº–éæ¼¢å­—ã®unicodeåˆæˆæ–‡å­—ã«è©²å½“ã™ã‚‹ã‚‚ã®
+	// ç¬¬1,2æ°´æº–æ¼¢å­—, è¿½åŠ æ¼¢å­—ã®ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã‚’ä½¿ç”¨ã™ã‚‹ã‚‚ã®
 
 	len = jis3CombAndIvsRevConv(uc, uc2, &cType, &code);
 	if (len != 0) {
@@ -3860,7 +3868,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// •½‰¼–¼W‡¥•Ğ‰¼–¼W‡‚Ì‹¤’Ê•¶š
+	// å¹³ä»®åé›†åˆãƒ»ç‰‡ä»®åé›†åˆã®å…±é€šæ–‡å­—
 
 	code = kanaCommon1Conv(uc, false);
 	if(code != 0) {
@@ -3870,7 +3878,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// •½‰¼–¼W‡
+	// å¹³ä»®åé›†åˆ
 
 	code = hiragana1Conv(uc, false);
 	if(code != 0) {
@@ -3880,7 +3888,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// •Ğ‰¼–¼W‡
+	// ç‰‡ä»®åé›†åˆ
 
 	code = katakana1Conv(uc, false);
 	if(code != 0) {
@@ -3890,7 +3898,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// JIS X0201 •Ğ‰¼–¼W‡
+	// JIS X0201 ç‰‡ä»®åé›†åˆ
 
 	code = hankaku1Conv(uc, false);
 	if(code != 0) {
@@ -3900,7 +3908,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ’Ç‰Á‹L†W‡
+	// è¿½åŠ è¨˜å·é›†åˆ
 
 	code = kigou1Conv(uc, false);
 	if(code != 0) {
@@ -3910,7 +3918,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‘æˆê¥‘æ“ñ…€Š¿šW‡ (Š¿šW‡)
+	// ç¬¬ä¸€ãƒ»ç¬¬äºŒæ°´æº–æ¼¢å­—é›†åˆ (æ¼¢å­—é›†åˆ)
 
 	code = jis12Conv(uc, false);
 	if(code != 0) {
@@ -3921,7 +3929,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‘æO…€Š¿šW‡ (JISŒİŠ·Š¿š1–Ê)
+	// ç¬¬ä¸‰æ°´æº–æ¼¢å­—é›†åˆ (JISäº’æ›æ¼¢å­—1é¢)
 
 	code = jis3Conv(uc, false);
 	if(code != 0) {
@@ -3931,7 +3939,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‘æl…€Š¿šW‡ (JISŒİŠ·Š¿š2–Ê)
+	// ç¬¬å››æ°´æº–æ¼¢å­—é›†åˆ (JISäº’æ›æ¼¢å­—2é¢)
 
 	code = jis4Conv(uc, false);
 	if(code != 0) {
@@ -3941,7 +3949,7 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 	}
 
 
-	// ‚»‚Ì‘¼‚Ì•s–¾‚È•¶š
+	// ãã®ä»–ã®ä¸æ˜ãªæ–‡å­—
 
 	*jisCode = 0;
 	*charLen = clen;
@@ -3951,17 +3959,17 @@ int32_t classOfCharUTF16(const char16_t* srcbuf, const size_t slen, int32_t *jis
 
 int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCode, size_t *charLen)
 {
-//	unicode•¶ší‚ğ”»’è‚·‚é
+//	unicodeæ–‡å­—ç¨®ã‚’åˆ¤å®šã™ã‚‹
 //
-//	sbuf		”»’f‚·‚é•¶šbuf
-//	slen		•ÏŠ·Œ³buf‚Ì’·‚³(uint8_t’PˆÊ)	
-//	–ß‚è’l		”»’fŒ‹‰Ê‚Ì•¶ší(F_CONTROL, F_ALPHA, c)
-//	jisCode		Œ‹‰Ê‚Ìjiscode‚ª“ü‚é
-//	charLen		Œ‹‰Ê‚ÌUTF-8•¶š’·(uint8_t’PˆÊ)‚ª“ü‚é
+//	sbuf		åˆ¤æ–­ã™ã‚‹æ–‡å­—buf
+//	slen		å¤‰æ›å…ƒbufã®é•·ã•(uint8_tå˜ä½)	
+//	æˆ»ã‚Šå€¤		åˆ¤æ–­çµæœã®æ–‡å­—ç¨®(F_CONTROL, F_ALPHA, â€¦)
+//	jisCode		çµæœã®jiscodeãŒå…¥ã‚‹
+//	charLen		çµæœã®UTF-8æ–‡å­—é•·(uint8_tå˜ä½)ãŒå…¥ã‚‹
 
 	uint8_t		cmpbuf[UTF8TABLELEN] = { 0 };
 
-	if(slen < UTF8TABLELEN) {													// ”äŠr‚Ì•Ö‹X‚Ì‚½‚ß‚Éƒoƒbƒtƒ@‚ÉƒRƒs[‚·‚éisbuf‚Ì”ÍˆÍŠO‚ğ“Ç‚İo‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ğ”ğ‚¯‚é‚½‚ßj
+	if(slen < UTF8TABLELEN) {													// æ¯”è¼ƒã®ä¾¿å®œã®ãŸã‚ã«ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ï¼ˆsbufã®ç¯„å›²å¤–ã‚’èª­ã¿å‡ºã—ã¦ã—ã¾ã†ã®ã‚’é¿ã‘ã‚‹ãŸã‚ï¼‰
 		memcpy(cmpbuf, srcbuf, sizeof(uint8_t) * slen);
 		cmpbuf[slen] = 0x0000;
 	}
@@ -3974,7 +3982,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 
 	int32_t		firstbyte = sbuf[0];
 
-	for(clen = 0; clen < 6;clen++) {					// æ“ªƒoƒCƒg‚Ìƒrƒbƒgƒpƒ^[ƒ“(MSB‚©‚ç‚Ì'1'‚Ì”j‚ğ’²‚×‚é
+	for(clen = 0; clen < 6;clen++) {					// å…ˆé ­ãƒã‚¤ãƒˆã®ãƒ“ãƒƒãƒˆãƒ‘ã‚¿ãƒ¼ãƒ³(MSBã‹ã‚‰ã®'1'ã®æ•°ï¼‰ã‚’èª¿ã¹ã‚‹
 		if( (firstbyte & 0x80 ) == 0 ) break;
 		firstbyte = firstbyte << 1;
 	}
@@ -3999,11 +4007,11 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 		default:
 			*jisCode = 0;                                   
 			*charLen = 1;
-			return F_UNKNOWN;							// 1ŒÂ‚Ìê‡‚Í•¶šƒf[ƒ^‚Ì“r’†,5ŒÂˆÈã‚Í•s³‚Èƒf[ƒ^‚Æ‚µ‚Ä‚Ç‚¿‚ç‚à–³‹‚·‚é
+			return F_UNKNOWN;							// 1å€‹ã®å ´åˆã¯æ–‡å­—ãƒ‡ãƒ¼ã‚¿ã®é€”ä¸­,5å€‹ä»¥ä¸Šã¯ä¸æ­£ãªãƒ‡ãƒ¼ã‚¿ã¨ã—ã¦ã©ã¡ã‚‰ã‚‚ç„¡è¦–ã™ã‚‹
 	}
 
 	for(size_t i = 1; i < clen; i++) {
-		if( (sbuf[i] & 0xC0) != 0x80 ) {				// ˆø‚«‘±‚­ŠeƒoƒCƒg‚ÌMSB‚ª'10'‚Å‚È‚¢‚È‚ç•s³‚Èƒf[ƒ^
+		if( (sbuf[i] & 0xC0) != 0x80 ) {				// å¼•ãç¶šãå„ãƒã‚¤ãƒˆã®MSBãŒ'10'ã§ãªã„ãªã‚‰ä¸æ­£ãªãƒ‡ãƒ¼ã‚¿
 			*jisCode = 0;                                   
 			*charLen = 1;
 			return F_UNKNOWN;            
@@ -4014,9 +4022,9 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	int32_t		uc2		= 0;
 	size_t		clen2	= 0;
 	
-	firstbyte = sbuf[clen];								// Œ‹‡•¶š‚ÆˆÙ‘ÌšƒZƒŒƒNƒ^‚Ìƒ`ƒFƒbƒN‚Ì‚½‚ßAŸ‚Ì•¶š‚àæ“¾‚·‚é
+	firstbyte = sbuf[clen];								// çµåˆæ–‡å­—ã¨ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã®ãƒã‚§ãƒƒã‚¯ã®ãŸã‚ã€æ¬¡ã®æ–‡å­—ã‚‚å–å¾—ã™ã‚‹
 
-	for (clen2 = 0; clen2 < 6; clen2++) {				// æ“ªƒoƒCƒg‚Ìƒrƒbƒgƒpƒ^[ƒ“(MSB‚©‚ç‚Ì'1'‚Ì”j‚ğ’²‚×‚é
+	for (clen2 = 0; clen2 < 6; clen2++) {				// å…ˆé ­ãƒã‚¤ãƒˆã®ãƒ“ãƒƒãƒˆãƒ‘ã‚¿ãƒ¼ãƒ³(MSBã‹ã‚‰ã®'1'ã®æ•°ï¼‰ã‚’èª¿ã¹ã‚‹
 		if ((firstbyte & 0x80) == 0) break;
 		firstbyte = firstbyte << 1;
 	}
@@ -4040,11 +4048,11 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	case 5:
 	default:
 		uc2		= 0;
-		clen2	= 1;									// 1ŒÂ‚Ìê‡‚Í•¶šƒf[ƒ^‚Ì“r’†,5ŒÂˆÈã‚Í•s³‚Èƒf[ƒ^‚Æ‚µ‚Ä‚Ç‚¿‚ç‚à–³‹‚·‚é
+		clen2	= 1;									// 1å€‹ã®å ´åˆã¯æ–‡å­—ãƒ‡ãƒ¼ã‚¿ã®é€”ä¸­,5å€‹ä»¥ä¸Šã¯ä¸æ­£ãªãƒ‡ãƒ¼ã‚¿ã¨ã—ã¦ã©ã¡ã‚‰ã‚‚ç„¡è¦–ã™ã‚‹
 	}
 
 	for (size_t i = 1; i < clen2; i++) {
-		if ((sbuf[clen + i] & 0xC0) != 0x80) {			// ˆø‚«‘±‚­ŠeƒoƒCƒg‚ÌMSB‚ª'10'‚Å‚È‚¢‚È‚ç•s³‚Èƒf[ƒ^
+		if ((sbuf[clen + i] & 0xC0) != 0x80) {			// å¼•ãç¶šãå„ãƒã‚¤ãƒˆã®MSBãŒ'10'ã§ãªã„ãªã‚‰ä¸æ­£ãªãƒ‡ãƒ¼ã‚¿
 			uc2 = 0;
 			clen2 = 1;
 			break;
@@ -4058,7 +4066,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	int32_t		cType;
 
 
-	// §ŒäƒR[ƒh (SPŠÜ‚Ş)
+	// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰ (SPå«ã‚€)
 
 	if(isUcControlChar(uc)) {
 		*jisCode	= uc;
@@ -4067,7 +4075,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
     
     
-	// '['‚©‚çn‚Ü‚é’Ç‰Á‹L†W‡
+	// '['ã‹ã‚‰å§‹ã¾ã‚‹è¿½åŠ è¨˜å·é›†åˆ
     
 	if(uc == '[') {
 		if( (len = kigou2RevConvUTF8(sbuf, UTF8TABLELEN, &code)) != 0) {
@@ -4078,7 +4086,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ‰p”W‡
+	// è‹±æ•°é›†åˆ
 	
 	code = alphaConv(uc, false);
 	if(code != 0) {
@@ -4088,8 +4096,8 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
     
 
-	// ‘æO…€”ñŠ¿š‚Ìunicode‡¬•¶š‚ÉŠY“–‚·‚é‚à‚Ì
-	// ‘æ1,2…€Š¿š, ’Ç‰ÁŠ¿š‚ÌˆÙ‘ÌšƒZƒŒƒNƒ^‚ğg—p‚·‚é‚à‚Ì
+	// ç¬¬ä¸‰æ°´æº–éæ¼¢å­—ã®unicodeåˆæˆæ–‡å­—ã«è©²å½“ã™ã‚‹ã‚‚ã®
+	// ç¬¬1,2æ°´æº–æ¼¢å­—, è¿½åŠ æ¼¢å­—ã®ç•°ä½“å­—ã‚»ãƒ¬ã‚¯ã‚¿ã‚’ä½¿ç”¨ã™ã‚‹ã‚‚ã®
 
 	len = jis3CombAndIvsRevConv(uc, uc2, &cType, &code);
 	if (len != 0) {
@@ -4099,7 +4107,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// •½‰¼–¼W‡¥•Ğ‰¼–¼W‡‚Ì‹¤’Ê•¶š
+	// å¹³ä»®åé›†åˆãƒ»ç‰‡ä»®åé›†åˆã®å…±é€šæ–‡å­—
 
 	code = kanaCommon1Conv(uc, false);
 	if(code != 0) {
@@ -4109,7 +4117,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// •½‰¼–¼W‡
+	// å¹³ä»®åé›†åˆ
 
 	code = hiragana1Conv(uc, false);
 	if(code != 0) {
@@ -4119,7 +4127,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// •Ğ‰¼–¼W‡
+	// ç‰‡ä»®åé›†åˆ
 
 	code = katakana1Conv(uc, false);
 	if(code != 0) {
@@ -4129,7 +4137,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// JIS X0201 •Ğ‰¼–¼W‡
+	// JIS X0201 ç‰‡ä»®åé›†åˆ
 
 	code = hankaku1Conv(uc, false);
 	if(code != 0) {
@@ -4139,7 +4147,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ’Ç‰Á‹L†W‡
+	// è¿½åŠ è¨˜å·é›†åˆ
 
 	code = kigou1Conv(uc, false);
 	if(code != 0) {
@@ -4149,7 +4157,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ‘æˆê¥‘æ“ñ…€Š¿šW‡ (Š¿šW‡)
+	// ç¬¬ä¸€ãƒ»ç¬¬äºŒæ°´æº–æ¼¢å­—é›†åˆ (æ¼¢å­—é›†åˆ)
 
 	code = jis12Conv(uc, false);
 	if(code != 0) {
@@ -4160,7 +4168,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ‘æO…€Š¿šW‡ (JISŒİŠ·Š¿š1–Ê)
+	// ç¬¬ä¸‰æ°´æº–æ¼¢å­—é›†åˆ (JISäº’æ›æ¼¢å­—1é¢)
 
 	code = jis3Conv(uc, false);
 	if(code != 0) {
@@ -4170,7 +4178,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ‘æl…€Š¿šW‡ (JISŒİŠ·Š¿š2–Ê)
+	// ç¬¬å››æ°´æº–æ¼¢å­—é›†åˆ (JISäº’æ›æ¼¢å­—2é¢)
 
 	code = jis4Conv(uc, false);
 	if(code != 0) {
@@ -4180,7 +4188,7 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 	}
 
 
-	// ‚»‚Ì‘¼‚Ì•s–¾‚È•¶š
+	// ãã®ä»–ã®ä¸æ˜ãªæ–‡å­—
 
 	*jisCode = 0;
 	*charLen = clen;
@@ -4190,18 +4198,18 @@ int32_t classOfCharUTF8(const uint8_t* srcbuf, const size_t slen, int32_t *jisCo
 
 uint32_t classOfCharU32T(const uint32_t code, int32_t *jisCode)
 {
-	//	unicode•¶ší‚ğ”»’è‚·‚é
+	//	unicodeæ–‡å­—ç¨®ã‚’åˆ¤å®šã™ã‚‹
 	//
-	//	code		”»’f‚·‚é•¶š32bit•¶šƒR[ƒh	
-	//	–ß‚è’l		”»’fŒ‹‰Ê‚Ì•¶ší(C_HALF_CONTROL, C_HALF_ALPHA, c)
-	//	jisCode		Œ‹‰Ê‚Ìjiscode‚ª“ü‚é
+	//	code		åˆ¤æ–­ã™ã‚‹æ–‡å­—32bitæ–‡å­—ã‚³ãƒ¼ãƒ‰	
+	//	æˆ»ã‚Šå€¤		åˆ¤æ–­çµæœã®æ–‡å­—ç¨®(C_HALF_CONTROL, C_HALF_ALPHA, â€¦)
+	//	jisCode		çµæœã®jiscodeãŒå…¥ã‚‹
 	//
 
 
 	const uint32_t		c_code = code & 0xFFFF0000;
 	const int32_t		jis    = code & 0x0000FFFF;
 
-	// §ŒäƒR[ƒh (SPŠÜ‚Ş)
+	// åˆ¶å¾¡ã‚³ãƒ¼ãƒ‰ (SPå«ã‚€)
 
 	switch (c_code)
 	{
@@ -4235,7 +4243,7 @@ uint32_t classOfCharU32T(const uint32_t code, int32_t *jisCode)
 
 void countMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length, const ConvStatus *status, uint16_t *mojiClass, size_t *mojiNum, size_t *mojiLen, int32_t *numCType)
 {
-	// ƒ\[ƒX•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚µA•¶š”‚àƒJƒEƒ“ƒg‚·‚éD
+	// ã‚½ãƒ¼ã‚¹æ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã—ã€æ–‡å­—æ•°ã‚‚ã‚«ã‚¦ãƒ³ãƒˆã™ã‚‹ï¼
 
 	size_t		charLen = 0;
 	int32_t		jisCode = 0;
@@ -4265,9 +4273,9 @@ void countMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length, con
 			}
 		}
 
-		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// ’ÊíA•¶ší‚Í F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ‚Ì4í—Ş‚Æ‚µ‚Äˆµ‚¤‚ªAF_KIGOU ‚ª‘¶İ‚·‚éê‡‚Í5í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ‚ª‘¶İ‚·‚éê‡‚Í6í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ‚ª‘¶İ‚·‚éê‡‚Í7í—Ş‚Æ‚µ‚Äˆµ‚¤D
+		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// é€šå¸¸ã€æ–‡å­—ç¨®ã¯ F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ã®4ç¨®é¡ã¨ã—ã¦æ‰±ã†ãŒã€F_KIGOU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯5ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯6ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯7ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
 
 		src += charLen;
 	}
@@ -4284,7 +4292,7 @@ void countMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length, con
 
 void countMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, const ConvStatus *status, uint16_t *mojiClass, size_t *mojiNum, size_t *mojiLen, int32_t *numCType)
 {
-	// ƒ\[ƒX•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚µA•¶š”‚àƒJƒEƒ“ƒg‚·‚éD
+	// ã‚½ãƒ¼ã‚¹æ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã—ã€æ–‡å­—æ•°ã‚‚ã‚«ã‚¦ãƒ³ãƒˆã™ã‚‹ï¼
 
 	size_t		charLen = 0;
 	int32_t		jisCode = 0;
@@ -4314,9 +4322,9 @@ void countMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, const
 			}
 		}
 
-		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// ’ÊíA•¶ší‚Í F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ‚Ì4í—Ş‚Æ‚µ‚Äˆµ‚¤‚ªAF_KIGOU ‚ª‘¶İ‚·‚éê‡‚Í5í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ‚ª‘¶İ‚·‚éê‡‚Í6í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ‚ª‘¶İ‚·‚éê‡‚Í7í—Ş‚Æ‚µ‚Äˆµ‚¤D
+		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// é€šå¸¸ã€æ–‡å­—ç¨®ã¯ F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ã®4ç¨®é¡ã¨ã—ã¦æ‰±ã†ãŒã€F_KIGOU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯5ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯6ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯7ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
 
 		src += charLen;
 	}
@@ -4333,7 +4341,7 @@ void countMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, const
 
 void countMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, const ConvStatus *status, uint16_t *mojiClass, size_t *mojiNum, size_t *mojiLen, int32_t *numCType)
 {
-	// “à•”ˆ——pU32T•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚µA•¶š”‚àƒJƒEƒ“ƒg‚·‚éD
+	// å†…éƒ¨å‡¦ç†ç”¨U32Tæ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã—ã€æ–‡å­—æ•°ã‚‚ã‚«ã‚¦ãƒ³ãƒˆã™ã‚‹ï¼
 
 	int32_t		jisCode = 0;
 	int32_t		charType = status->bank[status->region[REGION_GL]];
@@ -4362,9 +4370,9 @@ void countMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, cons
 			}
 		}
 
-		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// ’ÊíA•¶ší‚Í F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ‚Ì4í—Ş‚Æ‚µ‚Äˆµ‚¤‚ªAF_KIGOU ‚ª‘¶İ‚·‚éê‡‚Í5í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ‚ª‘¶İ‚·‚éê‡‚Í6í—Ş‚Æ‚µ‚Äˆµ‚¤D
-		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ‚ª‘¶İ‚·‚éê‡‚Í7í—Ş‚Æ‚µ‚Äˆµ‚¤D
+		if ((c == F_KIGOU) && (*numCType < 5))     *numCType = 5;					// é€šå¸¸ã€æ–‡å­—ç¨®ã¯ F_JIS1KANJI, F_ALPHA, F_HIRAGANA, F_KATAKANA ã®4ç¨®é¡ã¨ã—ã¦æ‰±ã†ãŒã€F_KIGOU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯5ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_HANKAKU) && (*numCType < 6))   *numCType = 6;					// F_HANKAKU ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯6ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
+		if ((c == F_JIS2KANJI) && (*numCType < 7)) *numCType = 7;					// F_JIS2KANJI ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯7ç¨®é¡ã¨ã—ã¦æ‰±ã†ï¼
 
 		src++;
 	}
@@ -4515,10 +4523,10 @@ inline void initBankElement(BankElement *element, const size_t cost, const BankS
 void initBankUnit(BankUnit *unit, const int32_t cType, const size_t cNum)
 {
 	//
-	// ’Êí‚Ì•¶ší(F_JIS1KANJI, F_ALPHA, F_KIGOU, F_HANKAKU, F_JIS2KANJI)‚Í’P“Æ‚Ì•¶ší‚Æ‚µ‚Äˆµ‚¤D
-	// F_HIRAGANA‚ÍAF_HIRAGANA, F_JIS1KANJI‚Ì‘I‘ğˆ‚Ì‘g‚İ‡‚í‚¹‚Æ‚µ‚Äˆµ‚¤D
-	// F_KATAKANA‚ÍAF_KATAKANA, F_JIS1KANJI‚Ì‘I‘ğˆ‚Ì‘g‚İ‡‚í‚¹‚Æ‚µ‚Äˆµ‚¤D
-	// F_KANACOMMON‚ÍAF_HIRAGANA, F_JIS1KANJI, F_KATAKANA‚Ì‘I‘ğˆ‚Ì‘g‚İ‡‚í‚¹‚Æ‚µ‚Äˆµ‚¤D
+	// é€šå¸¸ã®æ–‡å­—ç¨®(F_JIS1KANJI, F_ALPHA, F_KIGOU, F_HANKAKU, F_JIS2KANJI)ã¯å˜ç‹¬ã®æ–‡å­—ç¨®ã¨ã—ã¦æ‰±ã†ï¼
+	// F_HIRAGANAã¯ã€F_HIRAGANA, F_JIS1KANJIã®é¸æŠè‚¢ã®çµ„ã¿åˆã‚ã›ã¨ã—ã¦æ‰±ã†ï¼
+	// F_KATAKANAã¯ã€F_KATAKANA, F_JIS1KANJIã®é¸æŠè‚¢ã®çµ„ã¿åˆã‚ã›ã¨ã—ã¦æ‰±ã†ï¼
+	// F_KANACOMMONã¯ã€F_HIRAGANA, F_JIS1KANJI, F_KATAKANAã®é¸æŠè‚¢ã®çµ„ã¿åˆã‚ã›ã¨ã—ã¦æ‰±ã†ï¼
 	//
 
 	unit->cType = cType;
@@ -4826,10 +4834,10 @@ void processBankGroup(BankGroup &src)
 void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 {
 	//
-	// src -> dst‚Éó‘Ô‚ª•Ï‚í‚éÛ‚ÌƒRƒXƒg‚ğŒvZ‚µA‘I‘ğˆ‚Ì“à‚ÌAÅ‚àƒRƒXƒg‚Ì¬‚³‚¢ƒ‹[ƒg‚ğ‘I‘ğ‚·‚éD
+	// src -> dstã«çŠ¶æ…‹ãŒå¤‰ã‚ã‚‹éš›ã®ã‚³ã‚¹ãƒˆã‚’è¨ˆç®—ã—ã€é¸æŠè‚¢ã®å†…ã®ã€æœ€ã‚‚ã‚³ã‚¹ãƒˆã®å°ã•ã„ãƒ«ãƒ¼ãƒˆã‚’é¸æŠã™ã‚‹ï¼
 	//
 
-	if (src.cType == dst.cType)								// src.cType == dst.cType (•¶ší‚ª“¯‚¶)‚Ìê‡
+	if (src.cType == dst.cType)								// src.cType == dst.cType (æ–‡å­—ç¨®ãŒåŒã˜)ã®å ´åˆ
 	{
 		for (int32_t i = 0; i < src.numCType; i++)
 		{
@@ -4883,10 +4891,10 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 		return;
 	}
 
-	const int32_t	cost_set_g0 = COST_GSET_TO_G0;															// BANK_G0 ‚Ì•¶ší‚ğ•ÏX‚·‚éƒRƒXƒg
-	const int32_t	cost_set_g1 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G1 : COST_1GSET_TO_G1;			// BANK_G1 ‚Ì•¶ší‚ğ•ÏX‚·‚éƒRƒXƒg
-	const int32_t	cost_set_g2 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G2 : COST_1GSET_TO_G2;			// BANK_G2 ‚Ì•¶ší‚ğ•ÏX‚·‚éƒRƒXƒg
-	const int32_t	cost_set_g3 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G3 : COST_1GSET_TO_G3;			// BANK_G3 ‚Ì•¶ší‚ğ•ÏX‚·‚éƒRƒXƒg
+	const int32_t	cost_set_g0 = COST_GSET_TO_G0;															// BANK_G0 ã®æ–‡å­—ç¨®ã‚’å¤‰æ›´ã™ã‚‹ã‚³ã‚¹ãƒˆ
+	const int32_t	cost_set_g1 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G1 : COST_1GSET_TO_G1;			// BANK_G1 ã®æ–‡å­—ç¨®ã‚’å¤‰æ›´ã™ã‚‹ã‚³ã‚¹ãƒˆ
+	const int32_t	cost_set_g2 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G2 : COST_1GSET_TO_G2;			// BANK_G2 ã®æ–‡å­—ç¨®ã‚’å¤‰æ›´ã™ã‚‹ã‚³ã‚¹ãƒˆ
+	const int32_t	cost_set_g3 = isTwoByteGSET(dst.cType) ? COST_2GSET_TO_G3 : COST_1GSET_TO_G3;			// BANK_G3 ã®æ–‡å­—ç¨®ã‚’å¤‰æ›´ã™ã‚‹ã‚³ã‚¹ãƒˆ
 
 
 	//
@@ -4901,7 +4909,7 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 			{
 				if ((k == src.cCode) || (k == i) || (k == j)) continue;
 
-				// element0[0]: ‘ÎÛ•¶ší‚ª BANK_G0 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G1->GR, G0=src.cType, G1=i, G2=j, G3=k) -------------------------------------------
+				// element0[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G0 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G1->GR, G0=src.cType, G1=i, G2=j, G3=k) -------------------------------------------
 				
 				int32_t		tmp_cost_set_g0 = cost_set_g0;
 				int32_t		tmp_cost_set_g1 = cost_set_g1;
@@ -4911,15 +4919,15 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				BankRouteSelection	sel;
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 					tmp_cost_set_g1 = 0;
 				} 
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 					tmp_cost_set_g2 = 0;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 					tmp_cost_set_g3 = 0;
 				}
@@ -4937,17 +4945,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element0[0][i][j][k], dst.element7[0][src.cCode][i][j], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element0[0][i][j][k], dst.element8[0][src.cCode][i][j], tmp_cost_set_g3);
 
-				// element0[1]: ‘ÎÛ•¶ší‚ª BANK_G0 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G2->GR, G0=src.cType, G1=i, G2=j, G3=k)  -------------------------------------------
+				// element0[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G0 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G2->GR, G0=src.cType, G1=i, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b4 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -4964,17 +4972,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element0[1][i][j][k], dst.element7[0][src.cCode][i][j], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element0[1][i][j][k], dst.element8[1][src.cCode][i][j], tmp_cost_set_g3);
 
-				// element0[2]: ‘ÎÛ•¶ší‚ª BANK_G0 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G3->GR, G0=src.cType, G1=i, G2=j, G3=k)  -------------------------------------------
+				// element0[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G0 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G3->GR, G0=src.cType, G1=i, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b7 = true;
 				}
 				else {
@@ -4991,7 +4999,7 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element0[2][i][j][k], dst.element7[0][src.cCode][i][j], tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element1[0]: ‘ÎÛ•¶ší‚ª BANK_G1 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G2->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
+				// element1[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G1 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G2->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
 
 				tmp_cost_set_g0 = cost_set_g0;
 				tmp_cost_set_g1 = cost_set_g1;
@@ -5000,15 +5008,15 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 					tmp_cost_set_g0 = 0;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b4 = true;
 					tmp_cost_set_g2 = 0;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 					tmp_cost_set_g3 = 0;
 				}
@@ -5026,17 +5034,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element1[0][i][j][k], dst.element7[1][i][src.cCode][j], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element1[0][i][j][k], dst.element8[2][i][src.cCode][j], tmp_cost_set_g3);
 
-				// element1[1]: ‘ÎÛ•¶ší‚ª BANK_G1 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G3->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
+				// element1[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G1 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G3->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b7 = true;
 				}
 				else {
@@ -5053,17 +5061,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element1[1][i][j][k], dst.element7[1][i][src.cCode][j], tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element2[0]: ‘ÎÛ•¶ší‚ª BANK_G1 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
+				// element2[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G1 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -5080,17 +5088,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element2[0][i][j][k], dst.element7[0][i][src.cCode][j], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element2[0][i][j][k], dst.element8[0][i][src.cCode][j], tmp_cost_set_g3);
 
-				// element2[1] ‘ÎÛ•¶ší‚ª BANK_G1 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G2->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
+				// element2[1] å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G1 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G2->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -5107,17 +5115,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element2[1][i][j][k], dst.element7[2][i][src.cCode][j], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element2[1][i][j][k], dst.element8[3][i][src.cCode][j], tmp_cost_set_g3);
 
-				// element2[2]: ‘ÎÛ•¶ší‚ª BANK_G1 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G3->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
+				// element2[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G1 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G3->GL, G1->GR, G0=i, G1=src.cType, G2=j, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = true;
 				}
 				else {
@@ -5134,7 +5142,7 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 //				if (sel.b8)
 
-				// element3[0]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G2->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element3[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G2->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				tmp_cost_set_g0 = cost_set_g0;
 				tmp_cost_set_g1 = cost_set_g1;
@@ -5143,15 +5151,15 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 					tmp_cost_set_g0 = 0;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 					tmp_cost_set_g1 = 0;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 					tmp_cost_set_g3 = 0;
 				}
@@ -5169,17 +5177,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element3[0][i][j][k], dst.element7[2][i][j][src.cCode], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element3[0][i][j][k], dst.element8[3][i][j][src.cCode], tmp_cost_set_g3);
 
-				// element3[1]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G2->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element3[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G2->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b7 = true;
 				}
 				else {
@@ -5196,17 +5204,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element3[1][i][j][k], dst.element7[2][i][j][src.cCode], tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element4[0]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element4[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -5223,17 +5231,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element4[0][i][j][k], dst.element7[0][i][j][src.cCode], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element4[0][i][j][k], dst.element8[1][i][j][src.cCode], tmp_cost_set_g3);
 
-				// element4[1]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element4[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -5250,17 +5258,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element4[1][i][j][k], dst.element7[1][i][j][src.cCode], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element4[1][i][j][k], dst.element8[2][i][j][src.cCode], tmp_cost_set_g3);
 
-				// element4[2]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G3->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element4[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G3->GL, G2->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = true;
 				}
 				else {
@@ -5277,17 +5285,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 //				if (sel.b8)
 
-				// element5[0]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS2) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element5[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS2) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = sel.b7 = sel.b8 = true;
 				}
 				else {
@@ -5304,17 +5312,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element5[0][i][j][k], dst.element7[0][i][j][src.cCode], tmp_cost_set_g3 + COST_G3_LS3R);
 				if (sel.b8) checkBankElement(src.element5[0][i][j][k], dst.element8[0][i][j][src.cCode], tmp_cost_set_g3);
 
-				// element5[1]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS2) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element5[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS2) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b7 = true;
 				}
 				else {
@@ -5331,17 +5339,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element5[1][i][j][k], dst.element7[0][i][j][src.cCode], tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element5[2]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS2) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element5[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS2) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G3->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b7 = true;
 				}
 				else {
@@ -5358,17 +5366,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element5[2][i][j][k], dst.element7[1][i][j][src.cCode], tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element5[3]: ‘ÎÛ•¶ší‚ª BANK_G2 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS2) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G3->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
+				// element5[3]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G2 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS2) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G3->GL, G1->GR, G0=i, G1=j, G2=src.cType, G3=k)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G3 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G3 ãŒ dst.cType ã®å ´åˆ
 					sel.b6 = true;
 				}
 				else {
@@ -5385,7 +5393,7 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 //				if (sel.b8)
 
-				// element6[0]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G3->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element6[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G3->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				tmp_cost_set_g0 = cost_set_g0;
 				tmp_cost_set_g1 = cost_set_g1;
@@ -5394,15 +5402,15 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 					tmp_cost_set_g0 = 0;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 					tmp_cost_set_g1 = 0;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 					tmp_cost_set_g2 = 0;
 				}
@@ -5420,17 +5428,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 //				if (sel.b8)
 
-				// element6[1]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğREGION_GL ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G3->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element6[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GL ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G3->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b4 = true;
 				}
 				else {
@@ -5447,17 +5455,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 //				if (sel.b8)
 
-				// element7[0]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element7[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
 				else {
@@ -5474,17 +5482,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element7[0][i][j][k], dst.element7[0][i][j][k],         tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element7[1]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element7[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
 				else {
@@ -5501,17 +5509,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element7[1][i][j][k], dst.element7[1][i][j][k],         tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element7[2]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğREGION_GR ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G2->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element7[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’REGION_GR ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G2->GL, G3->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = true;
 				}
 				else {
@@ -5528,17 +5536,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 				if (sel.b7) checkBankElement(src.element7[2][i][j][k], dst.element7[2][i][j][k],         tmp_cost_set_g3);
 //				if (sel.b8)
 
-				// element8[0]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS3) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element8[0]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS3) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = sel.b4 = sel.b5 = true;
 				}
 				else {
@@ -5555,17 +5563,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 				if (sel.b8) checkBankElement(src.element8[0][i][j][k], dst.element8[0][i][j][k],         tmp_cost_set_g3);
 
-				// element8[1]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS3) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G0->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element8[1]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS3) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G0->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b4 = true;
 				}
 				else {
@@ -5582,17 +5590,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 				if (sel.b8) checkBankElement(src.element8[1][i][j][k], dst.element8[1][i][j][k],         tmp_cost_set_g3);
 
-				// element8[2]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS3) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G1->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element8[2]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS3) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G1->GL, G2->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b1 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b4 = true;
 				}
 				else {
@@ -5609,17 +5617,17 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 				if (sel.b8) checkBankElement(src.element8[2][i][j][k], dst.element8[2][i][j][k],         tmp_cost_set_g3);
 
-				// element8[3]: ‘ÎÛ•¶ší‚ª BANK_G3 ‚É‚ ‚èA‚»‚ê‚ğƒVƒ“ƒOƒ‹ƒVƒtƒg (SS3) ‚Å•\¦‚µ‚Ä‚¢‚éó‘Ô (G2->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
+				// element8[3]: å¯¾è±¡æ–‡å­—ç¨®ãŒ BANK_G3 ã«ã‚ã‚Šã€ãã‚Œã‚’ã‚·ãƒ³ã‚°ãƒ«ã‚·ãƒ•ãƒˆ (SS3) ã§è¡¨ç¤ºã—ã¦ã„ã‚‹çŠ¶æ…‹ (G2->GL, G1->GR, G0=i, G1=j, G2=k, G3=src.cType)  -------------------------------------------
 
 				sel.b0 = sel.b1 = sel.b2 = sel.b3 = sel.b4 = sel.b5 = sel.b6 = sel.b7 = sel.b8 = false;
 
-				if (i == dst.cCode) {									// BANK_G0 ‚ª dst.cType ‚Ìê‡
+				if (i == dst.cCode) {									// BANK_G0 ãŒ dst.cType ã®å ´åˆ
 					sel.b0 = true;
 				}
-				else if (j == dst.cCode) {								// BANK_G1 ‚ª dst.cType ‚Ìê‡
+				else if (j == dst.cCode) {								// BANK_G1 ãŒ dst.cType ã®å ´åˆ
 					sel.b2 = true;
 				}
-				else if (k == dst.cCode) {								// BANK_G2 ‚ª dst.cType ‚Ìê‡
+				else if (k == dst.cCode) {								// BANK_G2 ãŒ dst.cType ã®å ´åˆ
 					sel.b3 = true;
 				}
 				else {
@@ -5636,7 +5644,7 @@ void calcBankGroupCost(BankGroup &src, BankGroup &dst)
 //				if (sel.b7)
 				if (sel.b8) checkBankElement(src.element8[3][i][j][k], dst.element8[3][i][j][k],         tmp_cost_set_g3);
 
-				// ‚±‚±‚Ü‚Å -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+				// ã“ã“ã¾ã§ -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 			}
 		}
 	}
@@ -5683,7 +5691,7 @@ void calcBankUnitCost(BankUnit &src, BankUnit &dst)
 BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length, const ConvStatus *status)
 {
 	//
-	// ƒ\[ƒX UTF-16 •¶š—ñ’†‚Ì•¶ší‚Ì•À‚Ñ‡AŒÂ”‚ğ”‚¦AÅ’Z‚Ì8’PˆÊ•„†•¶š—ñ‚Æ‚È‚é‚æ‚¤‚Éƒoƒ“ƒN‚ğŠ„‚è“–‚Ä‚éD
+	// ã‚½ãƒ¼ã‚¹ UTF-16 æ–‡å­—åˆ—ä¸­ã®æ–‡å­—ç¨®ã®ä¸¦ã³é †ã€å€‹æ•°ã‚’æ•°ãˆã€æœ€çŸ­ã®8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¨ãªã‚‹ã‚ˆã†ã«ãƒãƒ³ã‚¯ã‚’å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	uint16_t		*mojiClass	= new uint16_t[total_length + 2];
@@ -5691,9 +5699,9 @@ BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length,
 	size_t			mojiLen		= 0;
 	int32_t			numCType	= 4;
 
-	countMojiSequenceUTF16(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);									// ƒ\[ƒX•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚·‚é. 
+	countMojiSequenceUTF16(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);									// ã‚½ãƒ¼ã‚¹æ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã™ã‚‹. 
 
-	// €”õ
+	// æº–å‚™
 
 	BankUnit	*src = new BankUnit;
 	BankUnit	*dst = new BankUnit;
@@ -5704,7 +5712,7 @@ BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length,
 	
 	initBankUnit(src, F_NULL, 0);
 
-	// ƒƒCƒ“
+	// ãƒ¡ã‚¤ãƒ³
 
 	size_t	count = mojiLen - 2;
 
@@ -5722,7 +5730,7 @@ BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length,
 		count--;
 	}
 
-	// Œ‹‰Ê‚Ì’Šo
+	// çµæœã®æŠ½å‡º
 
 	const int32_t gL = status->region[REGION_GL];
 	const int32_t gR = status->region[REGION_GR];
@@ -5743,15 +5751,15 @@ BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length,
 	if ((gL == BANK_G3) && (gR == BANK_G1)) result = &src->group[0].element6[0][g0][g1][g2];
 	if ((gL == BANK_G3) && (gR == BANK_G2)) result = &src->group[0].element6[1][g0][g1][g2];
 
-	BankSet	*bankSeq = new BankSet[result->blen + 1];													// Œ‹‰Ê‚ğ•Û‘¶‚·‚éƒoƒbƒtƒ@‚ğŠm•Û‚·‚éDŒã‚ÅŒÄ‚Ño‚µ‘¤‚ÅŠJ•ú‚·‚é•K—v‚ ‚èD
+	BankSet	*bankSeq = new BankSet[result->blen + 1];													// çµæœã‚’ä¿å­˜ã™ã‚‹ãƒãƒƒãƒ•ã‚¡ã‚’ç¢ºä¿ã™ã‚‹ï¼å¾Œã§å‘¼ã³å‡ºã—å´ã§é–‹æ”¾ã™ã‚‹å¿…è¦ã‚ã‚Šï¼
 
 	for (size_t i = 0; i < result->blen; i++) {
-		bankSeq[i] = result->bseq[result->blen - i - 1];												// Œ‹‰Ê‚ğ‹t‡‚ÉƒRƒs[‚µ‚Äû”[‚·‚é
+		bankSeq[i] = result->bseq[result->blen - i - 1];												// çµæœã‚’é€†é †ã«ã‚³ãƒ”ãƒ¼ã—ã¦åç´ã™ã‚‹
 	}
 
-	bankSeq[result->blen] = USE_BANK_NONE;																// ƒf[ƒ^‚ÌI’[
+	bankSeq[result->blen] = USE_BANK_NONE;																// ãƒ‡ãƒ¼ã‚¿ã®çµ‚ç«¯
 
-	// Œãn––
+	// å¾Œå§‹æœ«
 
 	delete [] mojiClass;
 	delete [] mojiNum;
@@ -5769,7 +5777,7 @@ BankSet* checkMojiSequenceUTF16(const char16_t *sbuf, const size_t total_length,
 BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, const ConvStatus *status)
 {
 	//
-	// ƒ\[ƒX UTF-8 •¶š—ñ’†‚Ì•¶ší‚Ì•À‚Ñ‡AŒÂ”‚ğ”‚¦AÅ’Z‚Ì8’PˆÊ•„†•¶š—ñ‚Æ‚È‚é‚æ‚¤‚Éƒoƒ“ƒN‚ğŠ„‚è“–‚Ä‚éD
+	// ã‚½ãƒ¼ã‚¹ UTF-8 æ–‡å­—åˆ—ä¸­ã®æ–‡å­—ç¨®ã®ä¸¦ã³é †ã€å€‹æ•°ã‚’æ•°ãˆã€æœ€çŸ­ã®8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¨ãªã‚‹ã‚ˆã†ã«ãƒãƒ³ã‚¯ã‚’å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	uint16_t		*mojiClass = new uint16_t[total_length + 2];
@@ -5777,9 +5785,9 @@ BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, c
 	size_t			mojiLen = 0;
 	int32_t			numCType = 4;
 
-	countMojiSequenceUTF8(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);			// ƒ\[ƒX•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚·‚é. 
+	countMojiSequenceUTF8(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);			// ã‚½ãƒ¼ã‚¹æ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã™ã‚‹. 
 
-	// €”õ
+	// æº–å‚™
 
 	BankUnit	*src = new BankUnit;
 	BankUnit	*dst = new BankUnit;
@@ -5790,7 +5798,7 @@ BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, c
 
 	initBankUnit(src, F_NULL, 0);
 
-	// ƒƒCƒ“
+	// ãƒ¡ã‚¤ãƒ³
 
 	size_t	count = mojiLen - 2;
 
@@ -5808,7 +5816,7 @@ BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, c
 		count--;
 	}
 
-	// Œ‹‰Ê‚Ì’Šo
+	// çµæœã®æŠ½å‡º
 
 	const int32_t gL = status->region[REGION_GL];
 	const int32_t gR = status->region[REGION_GR];
@@ -5829,15 +5837,15 @@ BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, c
 	if ((gL == BANK_G3) && (gR == BANK_G1)) result = &src->group[0].element6[0][g0][g1][g2];
 	if ((gL == BANK_G3) && (gR == BANK_G2)) result = &src->group[0].element6[1][g0][g1][g2];
 
-	BankSet	*bankSeq = new BankSet[result->blen + 1];													// Œ‹‰Ê‚ğ•Û‘¶‚·‚éƒoƒbƒtƒ@‚ğŠm•Û‚·‚éDŒã‚ÅŒÄ‚Ño‚µ‘¤‚ÅŠJ•ú‚·‚é•K—v‚ ‚èD
+	BankSet	*bankSeq = new BankSet[result->blen + 1];													// çµæœã‚’ä¿å­˜ã™ã‚‹ãƒãƒƒãƒ•ã‚¡ã‚’ç¢ºä¿ã™ã‚‹ï¼å¾Œã§å‘¼ã³å‡ºã—å´ã§é–‹æ”¾ã™ã‚‹å¿…è¦ã‚ã‚Šï¼
 
 	for (size_t i = 0; i < result->blen; i++) {
-		bankSeq[i] = result->bseq[result->blen - i - 1];												// Œ‹‰Ê‚ğ‹t‡‚ÉƒRƒs[‚µ‚Äû”[‚·‚é
+		bankSeq[i] = result->bseq[result->blen - i - 1];												// çµæœã‚’é€†é †ã«ã‚³ãƒ”ãƒ¼ã—ã¦åç´ã™ã‚‹
 	}
 
-	bankSeq[result->blen] = USE_BANK_NONE;																// ƒf[ƒ^‚ÌI’[
+	bankSeq[result->blen] = USE_BANK_NONE;																// ãƒ‡ãƒ¼ã‚¿ã®çµ‚ç«¯
 
-	// Œãn––
+	// å¾Œå§‹æœ«
 
 	delete[] mojiClass;
 	delete[] mojiNum;
@@ -5855,7 +5863,7 @@ BankSet* checkMojiSequenceUTF8(const uint8_t *sbuf, const size_t total_length, c
 BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, const ConvStatus *status)
 {
 	//
-	// ƒ\[ƒX U32T •¶š—ñ’†‚Ì•¶ší‚Ì•À‚Ñ‡AŒÂ”‚ğ”‚¦AÅ’Z‚Ì8’PˆÊ•„†•¶š—ñ‚Æ‚È‚é‚æ‚¤‚Éƒoƒ“ƒN‚ğŠ„‚è“–‚Ä‚éD
+	// ã‚½ãƒ¼ã‚¹ U32T æ–‡å­—åˆ—ä¸­ã®æ–‡å­—ç¨®ã®ä¸¦ã³é †ã€å€‹æ•°ã‚’æ•°ãˆã€æœ€çŸ­ã®8å˜ä½ç¬¦å·æ–‡å­—åˆ—ã¨ãªã‚‹ã‚ˆã†ã«ãƒãƒ³ã‚¯ã‚’å‰²ã‚Šå½“ã¦ã‚‹ï¼
 	//
 
 	uint16_t		*mojiClass = new uint16_t[total_length + 2];
@@ -5863,9 +5871,9 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	size_t			mojiLen = 0;
 	int32_t			numCType = 4;
 
-	countMojiSequenceU32T(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);				// ƒ\[ƒX•¶š—ñ‚Ì•¶š‚Ì•À‚Ñ‡‚ğæ“¾‚·‚é. 
+	countMojiSequenceU32T(sbuf, total_length, status, mojiClass, mojiNum, &mojiLen, &numCType);				// ã‚½ãƒ¼ã‚¹æ–‡å­—åˆ—ã®æ–‡å­—ã®ä¸¦ã³é †ã‚’å–å¾—ã™ã‚‹. 
 
-	// €”õ
+	// æº–å‚™
 
 	BankUnit	*src = new BankUnit;
 	BankUnit	*dst = new BankUnit;
@@ -5876,7 +5884,7 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 
 	initBankUnit(src, F_NULL, 0);
 
-	// ƒƒCƒ“
+	// ãƒ¡ã‚¤ãƒ³
 
 	size_t	count = mojiLen - 2;
 
@@ -5894,7 +5902,7 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 		count--;
 	}
 
-	// Œ‹‰Ê‚Ì’Šo
+	// çµæœã®æŠ½å‡º
 
 	const int32_t gL = status->region[REGION_GL];
 	const int32_t gR = status->region[REGION_GR];
@@ -5915,15 +5923,15 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	if ((gL == BANK_G3) && (gR == BANK_G1)) result = &src->group[0].element6[0][g0][g1][g2];
 	if ((gL == BANK_G3) && (gR == BANK_G2)) result = &src->group[0].element6[1][g0][g1][g2];
 
-	BankSet	*bankSeq = new BankSet[result->blen + 1];													// Œ‹‰Ê‚ğ•Û‘¶‚·‚éƒoƒbƒtƒ@‚ğŠm•Û‚·‚éDŒã‚ÅŒÄ‚Ño‚µ‘¤‚ÅŠJ•ú‚·‚é•K—v‚ ‚èD
+	BankSet	*bankSeq = new BankSet[result->blen + 1];													// çµæœã‚’ä¿å­˜ã™ã‚‹ãƒãƒƒãƒ•ã‚¡ã‚’ç¢ºä¿ã™ã‚‹ï¼å¾Œã§å‘¼ã³å‡ºã—å´ã§é–‹æ”¾ã™ã‚‹å¿…è¦ã‚ã‚Šï¼
 
 	for (size_t i = 0; i < result->blen; i++) {
-		bankSeq[i] = result->bseq[result->blen - i - 1];												// Œ‹‰Ê‚ğ‹t‡‚ÉƒRƒs[‚µ‚Äû”[‚·‚é
+		bankSeq[i] = result->bseq[result->blen - i - 1];												// çµæœã‚’é€†é †ã«ã‚³ãƒ”ãƒ¼ã—ã¦åç´ã™ã‚‹
 	}
 
-	bankSeq[result->blen] = USE_BANK_NONE;																// ƒf[ƒ^‚ÌI’[
+	bankSeq[result->blen] = USE_BANK_NONE;																// ãƒ‡ãƒ¼ã‚¿ã®çµ‚ç«¯
 
-	// Œãn––
+	// å¾Œå§‹æœ«
 
 	delete[] mojiClass;
 	delete[] mojiNum;
@@ -5937,4 +5945,89 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	return bankSeq;
 }
 
+#ifdef __linux__
 
+#define CONVBUFSIZE 65536
+
+#include <iconv.h>
+#include <errno.h>
+
+// https://stackoverflow.com/a/14528742/26736
+int strlen16(const char16_t* strarg)
+{
+   if(!strarg)
+     return -1; //strarg is NULL pointer
+   char16_t* str = (char16_t*) strarg;
+   for(;*str;++str)
+     ; // empty body
+   return str-strarg;
+}
+
+char16_t* str16cpy(char16_t* destination, const char16_t* source)
+{
+    char16_t* temp = destination;
+    while((*temp++ = *source++) != 0)
+    ;
+    return destination;
+}
+
+char16_t u16_buf[CONVBUFSIZE / 2];
+char     u8_buf[CONVBUFSIZE];
+
+char* u16tou8(const char16_t *u16str, size_t* len)
+{
+	size_t n_in = strlen16(u16str) * 2;
+	str16cpy(u16_buf, u16str);
+	size_t n_out = CONVBUFSIZE;
+	char *in  = (char*)u16_buf;
+	char *out = u8_buf;
+	iconv_t ic = iconv_open("UTF-8", "UTF-16LE");
+	if (ic == (iconv_t)-1) {
+		fprintf(stderr, "iconv_open(): failed to open iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t rl = iconv(ic, &in, &n_in, &out, &n_out);
+	if (rl == -1) {
+		fprintf(stderr, "iconv(): failed to convert with iconv(%d)\n", errno);
+		return 0;
+	}
+	int rc = iconv_close(ic);
+	if (rc == -1) {
+		fprintf(stderr, "iconv_close(): failed to close iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t l = CONVBUFSIZE - n_out;
+	u8_buf[l] = '\0';
+	if (len) *len = l;
+	return u8_buf;
+}
+
+char16_t* u8tou16(const char *u8str, size_t* len)
+{
+	size_t n_in = strlen(u8str);
+	strcpy(u8_buf, u8str);
+	size_t n_out = CONVBUFSIZE;
+	char *in  = u8_buf;
+	char *out = (char*)u16_buf;
+	iconv_t ic = iconv_open("UTF-16LE", "UTF-8");
+	if (ic == (iconv_t)-1) {
+		fprintf(stderr, "iconv_open(): failed to open iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t rl = iconv(ic, &in, &n_in, &out, &n_out);
+	if (rl == -1) {
+		fprintf(stderr, "iconv(): failed to convert with iconv(%d)\n", errno);
+		return 0;
+	}
+	int rc = iconv_close(ic);
+	if (rc == -1) {
+		fprintf(stderr, "iconv_close(): failed to close iconv(%d)\n", errno);
+		return 0;
+	}
+	size_t l = (CONVBUFSIZE - n_out) / 2;
+	u16_buf[l] = '\0';
+	if (len) *len = l;
+	return u16_buf;
+}
+
+#endif // __linux__

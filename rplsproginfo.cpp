@@ -1,8 +1,16 @@
 // rplsproginfo.cpp
 //
 
-#include "stdafx.h"
-#include <windows.h>
+#ifdef _WINDOWS
+ #include "stdafx.h"
+ #include <windows.h>
+#else
+ #include <stdlib.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <libgen.h> //dirname, basename
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
@@ -14,43 +22,73 @@
 #include "convToUnicode.h"
 
 
-// ’è”‚È‚Ç
+// å®šæ•°ãªã©
 
 #define		RPLSFILESIZE			(16 * 1024)
 
 
-// ƒ}ƒNƒ’è‹`
+// ãƒã‚¯ãƒ­å®šç¾©
 
+#ifdef _WINDOWS
 #define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
+#else
+#define     printMsg(...)           printf(__VA_ARGS__)
+#define     printErrMsg(...)        fprintf(stderr, __VA_ARGS__)
+#endif
 
 
 //
 
 bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param)
 {
+#ifdef _WINDOWS
 	HANDLE	hFile = CreateFile(fname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
 	if (hFile == INVALID_HANDLE_VALUE) {
-		printErrMsg("”Ô‘gî•ñŒ³ƒtƒ@ƒCƒ‹ %s ‚ğŠJ‚­‚Ì‚É¸”s‚µ‚Ü‚µ‚½.\n", fname);
+		printErrMsg("ç•ªçµ„æƒ…å ±å…ƒãƒ•ã‚¡ã‚¤ãƒ« %s ã‚’é–‹ãã®ã«å¤±æ•—ã—ã¾ã—ãŸ.\n", fname);
 		return	false;
 	}
-
+#else
+	int hFile = open(fname, O_RDONLY);
+	if (hFile == -1) {
+		printErrMsg("ç•ªçµ„æƒ…å ±å…ƒãƒ•ã‚¡ã‚¤ãƒ« %s ã‚’é–‹ãã®ã«å¤±æ•—ã—ã¾ã—ãŸ.\n", fname);
+		return	false;
+	}
+#endif
 	const int32_t	srcfiletype = rplsTsCheck(hFile);
 
-	if ((srcfiletype != FILE_188TS) && (srcfiletype != FILE_192TS) && (srcfiletype != FILE_RPLS)) {										// –³Œø‚Èƒtƒ@ƒCƒ‹‚Ìê‡
-		printErrMsg("”Ô‘gî•ñŒ³ƒtƒ@ƒCƒ‹ %s ‚Í—LŒø‚ÈTS, rplsƒtƒ@ƒCƒ‹‚Å‚Í‚ ‚è‚Ü‚¹‚ñ.\n", fname);
+	if ((srcfiletype != FILE_188TS) && (srcfiletype != FILE_192TS) && (srcfiletype != FILE_RPLS)) {										// ç„¡åŠ¹ãªãƒ•ã‚¡ã‚¤ãƒ«ã®å ´åˆ
+		printErrMsg("ç•ªçµ„æƒ…å ±å…ƒãƒ•ã‚¡ã‚¤ãƒ« %s ã¯æœ‰åŠ¹ãªTS, rplsãƒ•ã‚¡ã‚¤ãƒ«ã§ã¯ã‚ã‚Šã¾ã›ã‚“.\n", fname);
+#ifdef _WINDOWS
 		CloseHandle(hFile);
+#else
+        close(hFile);
+#endif
 		return	false;
 	}
 
-	// ”Ô‘gî•ñ‚Ì“Ç‚İ‚İ
-
-	_wfullpath(proginfo->fullpath, fname, _MAX_PATH);																	// ƒtƒ‹ƒpƒX–¼æ“¾
-	_wsplitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);			// ƒx[ƒXƒtƒ@ƒCƒ‹–¼‚ÆŠg’£q
-	
-	proginfo->fsize = GetFileDataSize(hFile);																			// ƒtƒ@ƒCƒ‹ƒTƒCƒYæ“¾
-
+	// ç•ªçµ„æƒ…å ±ã®èª­ã¿è¾¼ã¿
+#ifdef _WINDOWS
+	_wfullpath(proginfo->fullpath, fname, _MAX_PATH);																	// ãƒ•ãƒ«ãƒ‘ã‚¹åå–å¾—
+	_wsplitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);			// ãƒ™ãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«åã¨æ‹¡å¼µå­
+	proginfo->fsize = GetFileDataSize(hFile);																			// ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚ºå–å¾—
+#else
+    char *p;
+    p = realpath(fname, proginfo->fullpath);
+	char pathbuf[_MAX_PATH];
+	strncpy(pathbuf, p, _MAX_PATH);
+	p = basename(pathbuf);
+	char* pdot = strrchr(p, '.');
+	if (pdot && pdot!=p) {
+			strncpy(proginfo->fext, pdot, _MAX_PATH);
+			*pdot = '\0';
+	} else {
+			proginfo->fext[0] = '\0';
+	}
+	strncpy(proginfo->fname, p, _MAX_PATH);
+	proginfo->fsize = GetFileDataSize(hFile);																			// ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚ºå–å¾—
+#endif
 	bool	bResult;
 
 	if (srcfiletype == FILE_RPLS) {
@@ -61,12 +99,19 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 	}
 
 	if (!bResult) {
-		printErrMsg("”Ô‘gî•ñŒ³ƒtƒ@ƒCƒ‹ %s ‚©‚ç—LŒø‚È”Ô‘gî•ñ‚ğŒŸo‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½.\n", fname);
+		printErrMsg("ç•ªçµ„æƒ…å ±å…ƒãƒ•ã‚¡ã‚¤ãƒ« %s ã‹ã‚‰æœ‰åŠ¹ãªç•ªçµ„æƒ…å ±ã‚’æ¤œå‡ºã§ãã¾ã›ã‚“ã§ã—ãŸ.\n", fname);
+#ifdef _WINDOWS
 		CloseHandle(hFile);
+#else
+		close(hFile);
+#endif
 		return	false;
 	}
-
+#ifdef _WINDOWS
 	CloseHandle(hFile);
+#else
+	close(hFile);
+#endif
 
 	return	true;
 }
@@ -110,7 +155,7 @@ bool rplsMakerCheck(const uint8_t *buf, const int32_t idMaker)
 bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 {
 
-	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ
+	// ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
 
 	uint8_t		buf[RPLSFILESIZE];
 	uint32_t	numRead;
@@ -118,15 +163,15 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 	SeekFileData(hFile, 0);
 	ReadFileData(hFile, buf, RPLSFILESIZE, &numRead);
 
-	// rplsî•ñ‚Ìæ“¾
+	// rplsæƒ…å ±ã®å–å¾—
 
-	const bool	bSonyRpls = rplsMakerCheck(buf, MAKERID_SONY);														// ƒ[ƒJ[ƒ`ƒFƒbƒNDsony‹y‚Ñpanasonic
+	const bool	bSonyRpls = rplsMakerCheck(buf, MAKERID_SONY);														// ãƒ¡ãƒ¼ã‚«ãƒ¼ãƒã‚§ãƒƒã‚¯ï¼sonyåŠã³panasonic
 	const bool	bPanaRpls = rplsMakerCheck(buf, MAKERID_PANASONIC);
 
 	const uint8_t	*appinfo = buf + ADR_APPINFO;
 	const uint8_t	*mpdata  = buf + (buf[ADR_MPDATA] << 24) + (buf[ADR_MPDATA + 1] << 16) + (buf[ADR_MPDATA + 2] << 8) + buf[ADR_MPDATA + 3];
 
-	// ˜^‰æ“ú
+	// éŒ²ç”»æ—¥æ™‚
 
 	proginfo->recyear	= (appinfo[ADR_RECYEAR]  >> 4) * 1000 + (appinfo[ADR_RECYEAR]  & 0x0F) * 100 + (appinfo[ADR_RECYEAR + 1] >> 4) * 10 + (appinfo[ADR_RECYEAR + 1] & 0x0F);
 	proginfo->recmonth	= (appinfo[ADR_RECMONTH] >> 4) * 10   + (appinfo[ADR_RECMONTH] & 0x0F);
@@ -135,56 +180,56 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 	proginfo->recmin	= (appinfo[ADR_RECMIN]   >> 4) * 10   + (appinfo[ADR_RECMIN]   & 0x0F);
 	proginfo->recsec	= (appinfo[ADR_RECSEC]   >> 4) * 10   + (appinfo[ADR_RECSEC]   & 0x0F);
 
-	// ˜^‰æŠúŠÔ
+	// éŒ²ç”»æœŸé–“
 
 	proginfo->durhour	= (appinfo[ADR_DURHOUR] >> 4) * 10 + (appinfo[ADR_DURHOUR] & 0x0F);
 	proginfo->durmin	= (appinfo[ADR_DURMIN]  >> 4) * 10 + (appinfo[ADR_DURMIN]  & 0x0F);
 	proginfo->dursec	= (appinfo[ADR_DURSEC]  >> 4) * 10 + (appinfo[ADR_DURSEC]  & 0x0F);
 
-	// ƒ^ƒCƒ€ƒ][ƒ“
+	// ã‚¿ã‚¤ãƒ ã‚¾ãƒ¼ãƒ³
 
 	proginfo->rectimezone = appinfo[ADR_TIMEZONE];
 
-	// ƒ[ƒJ[ID, ƒ[ƒJ[‹@íƒR[ƒh
+	// ãƒ¡ãƒ¼ã‚«ãƒ¼ID, ãƒ¡ãƒ¼ã‚«ãƒ¼æ©Ÿç¨®ã‚³ãƒ¼ãƒ‰
 
 	proginfo->makerid	= appinfo[ADR_MAKERID]   * 256 + appinfo[ADR_MAKERID + 1];
 	proginfo->modelcode	= appinfo[ADR_MODELCODE] * 256 + appinfo[ADR_MODELCODE + 1];
 
-	// •ú‘—í•Êî•ñipanasonicƒŒƒRŒü‚¯j
+	// æ”¾é€ç¨®åˆ¥æƒ…å ±ï¼ˆpanasonicãƒ¬ã‚³å‘ã‘ï¼‰
 
-	proginfo->recsrc	= bPanaRpls ? mpdata[ADR_RECSRC_PANA] * 256 + mpdata[ADR_RECSRC_PANA + 1] : -1;				// •ú‘—í•Êî•ñ‚ğæ“¾DƒpƒiˆÈŠO‚È‚ç•ú‘—í•Êî•ñ–³‚µ(-1)
+	proginfo->recsrc	= bPanaRpls ? mpdata[ADR_RECSRC_PANA] * 256 + mpdata[ADR_RECSRC_PANA + 1] : -1;				// æ”¾é€ç¨®åˆ¥æƒ…å ±ã‚’å–å¾—ï¼ãƒ‘ãƒŠä»¥å¤–ãªã‚‰æ”¾é€ç¨®åˆ¥æƒ…å ±ç„¡ã—(-1)
 
-	// ƒ`ƒƒƒ“ƒlƒ‹”Ô†, ƒ`ƒƒƒ“ƒlƒ‹–¼i•ú‘—‹Ç–¼j
+	// ãƒãƒ£ãƒ³ãƒãƒ«ç•ªå·, ãƒãƒ£ãƒ³ãƒãƒ«åï¼ˆæ”¾é€å±€åï¼‰
 
 	proginfo->chnum		= appinfo[ADR_CHANNELNUM] * 256 + appinfo[ADR_CHANNELNUM + 1];
 	proginfo->chnamelen = (int32_t)conv_to_unicode((char16_t*)proginfo->chname, CONVBUFSIZE, appinfo + ADR_CHANNELNAME + 1, (size_t)appinfo[ADR_CHANNELNAME], param->bCharSize, param->bIVS);
 
-	// ”Ô‘g–¼
+	// ç•ªçµ„å
 
 	proginfo->pnamelen = (int32_t)conv_to_unicode((char16_t*)proginfo->pname, CONVBUFSIZE, appinfo + ADR_PNAME + 1, (size_t)appinfo[ADR_PNAME], param->bCharSize, param->bIVS);
 
-	// ”Ô‘g“à—e
+	// ç•ªçµ„å†…å®¹
 
 	const size_t	pdetaillen = appinfo[ADR_PDETAIL] * 256 + appinfo[ADR_PDETAIL + 1];
 	proginfo->pdetaillen = (int32_t)conv_to_unicode((char16_t*)proginfo->pdetail, CONVBUFSIZE, appinfo + ADR_PDETAIL + 2, pdetaillen, param->bCharSize, param->bIVS);
 
-	if (bSonyRpls)		// sonyƒŒƒR[ƒ_[‚Ìê‡
+	if (bSonyRpls)		// sonyãƒ¬ã‚³ãƒ¼ãƒ€ãƒ¼ã®å ´åˆ
 	{
-		// ”Ô‘g“à—eÚ×
+		// ç•ªçµ„å†…å®¹è©³ç´°
 
 		const int32_t	pextendlen = mpdata[ADR_PEXTENDLEN] * 256 + mpdata[ADR_PEXTENDLEN + 1];
 		proginfo->pextendlen = (int32_t)conv_to_unicode((char16_t*)proginfo->pextend, CONVBUFSIZE, appinfo + ADR_PDETAIL + 2 + pdetaillen, pextendlen, param->bCharSize, param->bIVS);
 
-		// ”Ô‘gƒWƒƒƒ“ƒ‹î•ñ
+		// ç•ªçµ„ã‚¸ãƒ£ãƒ³ãƒ«æƒ…å ±
 
 		for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = (mpdata[ADR_GENRE + i * 4 + 0] == 0x01) ? mpdata[ADR_GENRE + i * 4 + 1] : -1;
 	}
 
-	if (bPanaRpls)		// panasonicƒŒƒR[ƒ_[‚Ìê‡
+	if (bPanaRpls)		// panasonicãƒ¬ã‚³ãƒ¼ãƒ€ãƒ¼ã®å ´åˆ
 	{
-		proginfo->pextendlen = -1;														// u”Ô‘g“à—eÚ×v‚ğ—L‚µ‚È‚¢
+		proginfo->pextendlen = -1;														// ã€Œç•ªçµ„å†…å®¹è©³ç´°ã€ã‚’æœ‰ã—ãªã„
 
-		// ”Ô‘gƒWƒƒƒ“ƒ‹î•ñ
+		// ç•ªçµ„ã‚¸ãƒ£ãƒ³ãƒ«æƒ…å ±
 
 		for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;
 
@@ -202,15 +247,20 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 		}
 	}
 
-	if (!bSonyRpls && !bPanaRpls)		// sony, panaˆÈŠO
+	if (!bSonyRpls && !bPanaRpls)		// sony, panaä»¥å¤–
 	{
-		for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;						// ”Ô‘gƒWƒƒƒ“ƒ‹î•ñ–³‚µ
-		proginfo->pextendlen = -1;														// u”Ô‘g“à—eÚ×v‚ğ—L‚µ‚È‚¢
+		for (int32_t i = 0; i < 3; i++) proginfo->genre[i] = -1;						// ç•ªçµ„ã‚¸ãƒ£ãƒ³ãƒ«æƒ…å ±ç„¡ã—
+		proginfo->pextendlen = -1;														// ã€Œç•ªçµ„å†…å®¹è©³ç´°ã€ã‚’æœ‰ã—ãªã„
 	}
 
 	return true;
 }
 
+#ifdef __linux__
+#define WCHAR char
+#define swprintf_s sprintf
+#define wcscmp strcmp
+#endif
 
 int compareForRecSrcStr(const void *item1, const void *item2)
 {
@@ -222,16 +272,29 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 {
 	static const WCHAR	*nameList[] =
 	{
-		L"TD",		L"’nãƒfƒWƒ^ƒ‹",
-		L"BD",		L"BSƒfƒWƒ^ƒ‹",
-		L"C1",		L"CSƒfƒWƒ^ƒ‹1",
-		L"C2",		L"CSƒfƒWƒ^ƒ‹2",
+#ifdef _WINDOWS
+		L"TD",		L"åœ°ä¸Šãƒ‡ã‚¸ã‚¿ãƒ«",
+		L"BD",		L"BSãƒ‡ã‚¸ã‚¿ãƒ«",
+		L"C1",		L"CSãƒ‡ã‚¸ã‚¿ãƒ«1",
+		L"C2",		L"CSãƒ‡ã‚¸ã‚¿ãƒ«2",
 		L"iL",		L"i.LINK(TS)",
 		L"MV",		L"AVCHD",
-		L"SK",		L"ƒXƒJƒp[(DLNA)",
-		L"DV",		L"DV“ü—Í",
-		L"TA",		L"’nãƒAƒiƒƒO",
-		L"NL",		L"ƒ‰ƒCƒ““ü—Í"
+		L"SK",		L"ã‚¹ã‚«ãƒ‘ãƒ¼(DLNA)",
+		L"DV",		L"DVå…¥åŠ›",
+		L"TA",		L"åœ°ä¸Šã‚¢ãƒŠãƒ­ã‚°",
+		L"NL",		L"ãƒ©ã‚¤ãƒ³å…¥åŠ›"
+#else
+		"TD",		"åœ°ä¸Šãƒ‡ã‚¸ã‚¿ãƒ«",
+		"BD",		"BSãƒ‡ã‚¸ã‚¿ãƒ«",
+		"C1",		"CSãƒ‡ã‚¸ã‚¿ãƒ«1",
+		"C2",		"CSãƒ‡ã‚¸ã‚¿ãƒ«2",
+		"iL",		"i.LINK(TS)",
+		"MV",		"AVCHD",
+		"SK",		"ã‚¹ã‚«ãƒ‘ãƒ¼(DLNA)",
+		"DV",		"DVå…¥åŠ›",
+		"TA",		"åœ°ä¸Šã‚¢ãƒŠãƒ­ã‚°",
+		"NL",		"ãƒ©ã‚¤ãƒ³å…¥åŠ›"
+#endif
 	};
 
 	static bool		bTableInitialized = false;
@@ -244,8 +307,13 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	static const WCHAR	*errNameList[] =
 	{
+#ifdef _WINDOWS
 		L"unknown",
 		L"n/a"
+#else
+		"unknown",
+		"n/a"
+#endif
 	};
 
 	const WCHAR	*srcStr = errNameList[1];
@@ -278,3 +346,9 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	return i - 1;
 }
+
+#ifdef __linux__
+#undef WCHAR
+#undef L
+#undef swprintf_s
+#endif
