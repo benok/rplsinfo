@@ -11,6 +11,7 @@ project "rplsinfo"
    filter "action:gmake"
       excludes { "stdafx.*", "targetver.h" }
       defines { "_FILE_OFFSET_BITS=64" }
+      linkoptions { "-static" }
 
    filter "configurations:Debug"
       defines { "DEBUG" }
