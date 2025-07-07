@@ -670,6 +670,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #ifdef _WINDOWS
 			WriteFileData(hFile, (uint8_t*)dstr, (uint32_t)dlen * sizeof(WCHAR), &numWrite);		// ディスク出力
 #else
+			dstr[dlen] = 0x0000;
 			size_t len;
 			char* u8 = u16tou8(dstr, &len);
 			WriteFileData(hFile, (uint8_t*)u8, len, &numWrite);										// ディスク出力
