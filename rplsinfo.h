@@ -58,6 +58,7 @@ typedef struct {
 	bool		bNoComma;
 	bool		bDQuot;
 	bool		bItemName;
+	bool		bJsonOutput;
 	bool		bDisplay;
 	bool		bCharSize;
 	bool		bIVS;
