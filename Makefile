@@ -10,9 +10,12 @@ endif
 
 ifeq ($(config),debug)
   rplsinfo_config = debug
-endif
-ifeq ($(config),release)
+
+else ifeq ($(config),release)
   rplsinfo_config = release
+
+else
+  $(error "invalid configuration $(config)")
 endif
 
 PROJECTS := rplsinfo
