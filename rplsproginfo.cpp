@@ -1,7 +1,7 @@
 // rplsproginfo.cpp
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
  #include "stdafx.h"
  #include <windows.h>
 #else
@@ -29,7 +29,7 @@
 
 // マクロ定義
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #define		printMsg(fmt, ...)		_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #else
@@ -42,7 +42,7 @@
 
 bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param)
 {
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 	HANDLE	hFile = CreateFile(fname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
 	if (hFile == INVALID_HANDLE_VALUE) {
@@ -60,7 +60,7 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 
 	if ((srcfiletype != FILE_188TS) && (srcfiletype != FILE_192TS) && (srcfiletype != FILE_RPLS)) {										// 無効なファイルの場合
 		printErrMsg("番組情報元ファイル %s は有効なTS, rplsファイルではありません.\n", fname);
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		CloseHandle(hFile);
 #else
         close(hFile);
@@ -69,7 +69,7 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 	}
 
 	// 番組情報の読み込み
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 	_wfullpath(proginfo->fullpath, fname, _MAX_PATH);																	// フルパス名取得
 	_wsplitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);			// ベースファイル名と拡張子
 	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
@@ -100,14 +100,14 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 
 	if (!bResult) {
 		printErrMsg("番組情報元ファイル %s から有効な番組情報を検出できませんでした.\n", fname);
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		CloseHandle(hFile);
 #else
 		close(hFile);
 #endif
 		return	false;
 	}
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 	CloseHandle(hFile);
 #else
 	close(hFile);
@@ -272,7 +272,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 {
 	static const WCHAR	*nameList[] =
 	{
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		L"TD",		L"地上デジタル",
 		L"BD",		L"BSデジタル",
 		L"C1",		L"CSデジタル1",
@@ -307,7 +307,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	static const WCHAR	*errNameList[] =
 	{
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		L"unknown",
 		L"n/a"
 #else

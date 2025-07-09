@@ -2,7 +2,7 @@
 // 文字集合の定義データ
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
  #include "stdafx.h"
 #else
  #include <stdio.h>

@@ -1,7 +1,7 @@
 // rplsinfo.cpp : コンソール アプリケーションのエントリ ポイントを定義します。
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
  #include "stdafx.h"
  #include <windows.h>
  #include <new.h>
@@ -33,7 +33,7 @@
 
 // 定数など
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #ifdef _WIN64
 #define		NAMESTRING				"\nrplsinfo version 1.5.2 (64bit)\n"
 #else
@@ -46,7 +46,7 @@
 
 // マクロ定義
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #define		printMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #else
@@ -65,7 +65,7 @@ void	outputProgInfo(HANDLE, const ProgInfo*, const CopyParams*);
 
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, _TCHAR** argv)
@@ -107,7 +107,7 @@ int main(int argc, _TCHAR** argv)
 
 	if (!param.bDisplay)
 	{
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		hWriteFile = CreateFile(argv[param.argDest], GENERIC_WRITE | GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
 		hWriteFile = open(argv[param.argDest], O_CREAT|O_TRUNC|O_RDWR, 0644);
@@ -138,7 +138,7 @@ int main(int argc, _TCHAR** argv)
 	// 終了処理
 
 	if (!param.bDisplay) {
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		CloseHandle(hWriteFile);
 #else
 		close(hWriteFile);
@@ -394,7 +394,7 @@ size_t convForCsv(WCHAR* dbuf, const size_t bufsize, const WCHAR* sbuf, const si
 
 void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* param)
 {
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 	WCHAR		sstr[CONVBUFSIZE];
 	WCHAR		dstr[CONVBUFSIZE];
 #else
@@ -414,7 +414,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		switch (param->flags[i])
 		{
 		case F_FileName:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイル名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"filename\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s%s", proginfo->fname, proginfo->fext);
@@ -427,7 +427,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_FileNameFullPath:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[フルパスファイル名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"fullpath\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->fullpath);
@@ -440,7 +440,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_FileSize:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイルサイズ]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"fsize\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%lld", proginfo->fsize);
@@ -451,7 +451,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecDate:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画日付]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"date\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.4d/%.2d/%.2d", proginfo->recyear, proginfo->recmonth, proginfo->recday);
@@ -464,7 +464,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecTime:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画時刻]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"time\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->rechour, proginfo->recmin, proginfo->recsec);
@@ -477,7 +477,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecDuration:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画期間]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"duration\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->durhour, proginfo->durmin, proginfo->dursec);
@@ -490,7 +490,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecTimeZone:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[タイムゾーン]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"tz_id\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->rectimezone);
@@ -501,7 +501,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_MakerID:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカーID]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"maker_id\":");
 			if (proginfo->makerid != -1) {
@@ -528,7 +528,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ModelCode:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカー機種コード]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"model_id\":");
 			if (proginfo->modelcode != -1) {
@@ -555,7 +555,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecSrc:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送種別]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"recsrc\":\"");
 			slen += getRecSrcStr(sstr + slen, CONVBUFSIZE - slen, proginfo->recsrc);
@@ -568,7 +568,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ChannelNum:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[チャンネル番号]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"ch\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.3dch", proginfo->chnum);
@@ -581,7 +581,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ChannelName:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送局名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"station\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->chname);
@@ -594,7 +594,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgName:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"title\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pname);
@@ -607,7 +607,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgDetail:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組内容]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"detail\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pdetail);
@@ -620,7 +620,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgExtend:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[内容詳細]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"extend\":\"");
 			if (proginfo->pextendlen == -1) {
@@ -643,7 +643,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgGenre:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組ジャンル]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"genre\":");
 			slen += putGenreStr(sstr + slen, CONVBUFSIZE - slen, proginfo->genre, param->bJsonOutput);
@@ -654,7 +654,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgVideo:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[映像]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"videofmt\":\"");
 			slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->videoformat);
@@ -667,7 +667,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgAudio:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[音声]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"audiofmt\":\"");
 			for (int32_t audioNum = 0; audioNum < 8; audioNum++)
@@ -705,7 +705,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 
 		// 出力形式に応じてsstrを調整
 		bool is_detail = ((param->flags[i] == F_ProgDetail) || (param->flags[i] == F_ProgExtend)); // 項目が詳細情報か否か(JSON出力用)
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 		size_t	dlen = convForCsv(dstr, CONVBUFSIZE - 5, sstr, slen, param, i == 0, is_detail);
 #else
 		size_t  u16slen;
@@ -721,7 +721,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			{
 			case S_NORMAL:
 			case S_CSV:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 				dstr[dlen++] = L',';								// COMMA
 #else
 				dstr[dlen++] = ',';									// COMMA
@@ -731,7 +731,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				dstr[dlen++] = 0x0009;								// TAB
 				break;
 			case S_SPACE:
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 				dstr[dlen++] = L' ';								// SPACE
 #else
 				dstr[dlen++] = ' ';									// SPACE
@@ -763,7 +763,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		// データ出力
 
 		if (!param->bDisplay) {
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			WriteFileData(hFile, (uint8_t*)dstr, (uint32_t)dlen * sizeof(WCHAR), &numWrite);		// ディスク出力
 #else
 			dstr[dlen] = 0x0000;
@@ -774,7 +774,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		}
 		else {
 			dstr[dlen] = 0x0000;
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 			printMsg("%s", dstr);																	// コンソール出力
 #else
 			printMsg("%s", u16tou8(dstr));															// コンソール出力
