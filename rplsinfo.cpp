@@ -416,9 +416,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_FileName:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイル名]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"filename\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"filename\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s%s", proginfo->fname, proginfo->fext);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[ファイル名]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"filename\":\"");
@@ -429,9 +429,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_FileNameFullPath:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[フルパスファイル名]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"fullpath\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"fullpath\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->fullpath);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[フルパスファイル名]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"fullpath\":\"");
@@ -442,7 +442,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_FileSize:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイルサイズ]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"fsize\":");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"fsize\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%lld", proginfo->fsize);
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[ファイルサイズ]\r\n");
@@ -453,9 +453,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_RecDate:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画日付]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"date\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"date\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.4d/%.2d/%.2d", proginfo->recyear, proginfo->recmonth, proginfo->recday);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画日付]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"date\":\"");
@@ -466,9 +466,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_RecTime:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画時刻]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"time\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"time\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->rechour, proginfo->recmin, proginfo->recsec);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画時刻]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"time\":\"");
@@ -479,9 +479,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_RecDuration:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画期間]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"duration\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"duration\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->durhour, proginfo->durmin, proginfo->dursec);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[録画期間]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"duration\":\"");
@@ -492,7 +492,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_RecTimeZone:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[タイムゾーン]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"tz_id\":");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"tz_id\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->rectimezone);
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[タイムゾーン]\r\n");
@@ -503,13 +503,13 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_MakerID:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカーID]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"maker_id\":");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"maker_id\":");
 			if (proginfo->makerid != -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->makerid);
 			}
 			else {
 				if (param->bJsonOutput)
-				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "-1");
+				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"-1");
 				else
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
 			}
@@ -530,13 +530,13 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ModelCode:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカー機種コード]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"model_id\":");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"model_id\":");
 			if (proginfo->modelcode != -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->modelcode);
 			}
 			else {
 				if (param->bJsonOutput)
-				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "-1");
+				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"-1");
 				else
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
 			}
@@ -557,9 +557,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_RecSrc:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送種別]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"recsrc\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"recsrc\":\"");
 			slen += getRecSrcStr(sstr + slen, CONVBUFSIZE - slen, proginfo->recsrc);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[放送種別]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"recsrc\":\"");
@@ -570,9 +570,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ChannelNum:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[チャンネル番号]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"ch\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"ch\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.3dch", proginfo->chnum);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[チャンネル番号]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"ch\":\"");
@@ -583,9 +583,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ChannelName:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送局名]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"station\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"station\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->chname);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[放送局名]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"station\":\"");
@@ -596,9 +596,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgName:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組名]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"title\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"title\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pname);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組名]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"title\":\"");
@@ -609,9 +609,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgDetail:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組内容]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"detail\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"detail\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pdetail);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組内容]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"detail\":\"");
@@ -622,14 +622,14 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgExtend:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[内容詳細]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"extend\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"extend\":\"");
 			if (proginfo->pextendlen == -1) {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"n/a");
 			}
 			else {
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pextend);
 			}
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[内容詳細]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"extend\":\"");
@@ -645,7 +645,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgGenre:
 #ifdef _MSC_VER
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組ジャンル]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"genre\":");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"genre\":");
 			slen += putGenreStr(sstr + slen, CONVBUFSIZE - slen, proginfo->genre, param->bJsonOutput);
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[番組ジャンル]\r\n");
@@ -656,9 +656,9 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgVideo:
 #ifdef _MSC_VER
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[映像]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"videofmt\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"videofmt\":\"");
 			slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->videoformat);
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "[映像]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"videofmt\":\"");
@@ -669,7 +669,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		case F_ProgAudio:
 #ifdef _MSC_VER
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[音声]\r\n");
-			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, "\"audiofmt\":\"");
+			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"audiofmt\":\"");
 			for (int32_t audioNum = 0; audioNum < 8; audioNum++)
 			{
 				if (proginfo->audioformat[audioNum] == -1) break;
@@ -680,7 +680,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				if (proginfo->audiotextlen[audioNum] != 0) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L" %s", proginfo->audiotext[audioNum]);
 				slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L" (%hs)", proginfo->audiolang[audioNum]);
 			}
-			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, "\"");
+			if (param->bJsonOutput) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"\"");
 #else
 			if (param->bItemName) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "[音声]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"audiofmt\":\"");
