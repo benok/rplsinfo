@@ -897,7 +897,7 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 #define swprintf_s sprintf
 #endif
 
-size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
+size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre, bool json_mode)
 {
 	const WCHAR	*str_genreL[] = {
 #ifdef _WINDOWS
@@ -1026,6 +1026,17 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 		len =  swprintf_s(buf, bufsize, L"n/a");
 	}
 #else
+	if (json_mode) {
+		if(genre[2] != -1) {
+			len =  sprintf(buf, "[\"%s[%s]\",\"%s[%s]\",\"%s[%s]\"]", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
+		} else if(genre[1] != -1) {
+			len =  sprintf(buf, "[\"%s[%s]\",\"%s[%s]\"]", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]]);
+		} else if(genre[0] != -1) {
+			len =  sprintf(buf, "[\"%s[%s]\"]", str_genreL[genre[0] >> 4],  str_genreM[genre[0]]);
+		} else {
+			len =  sprintf(buf, "[]");
+		}
+	} else {
 	if(genre[2] != -1) {
 		len =  sprintf(buf, "%s 〔%s〕　%s 〔%s〕　%s 〔%s〕", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
 	} else if(genre[1] != -1) {
@@ -1034,6 +1045,7 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre)
 		len =  sprintf(buf, "%s 〔%s〕", str_genreL[genre[0] >> 4],  str_genreM[genre[0]]);
 	} else {
 		len =  sprintf(buf, "n/a");
+	}
 	}
 #endif
 	return len;
