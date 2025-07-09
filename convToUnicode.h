@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
  #include <Windows.h>
 #endif
 

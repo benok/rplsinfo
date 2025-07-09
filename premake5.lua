@@ -13,6 +13,9 @@ project "rplsinfo"
       defines { "_FILE_OFFSET_BITS=64" }
       linkoptions { "-static" }
 
+   filter "action:vs*"
+      buildoptions { "/utf-8" }
+
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"

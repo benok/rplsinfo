@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 # include "stdafx.h"
 # include <windows.h>
 #else // __linux__
@@ -15,7 +15,7 @@
 
 
 //
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #ifdef _WIN32
   #define _SNPRINTF(x, len, ...) _snprintf_s(x, len, len - 1, __VA_ARGS__)
 #else
