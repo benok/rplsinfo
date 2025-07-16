@@ -1,10 +1,20 @@
 workspace "rplsinfo"
    configurations { "Debug", "Release" }
+   platforms { "Win32", "Win64" }
+
+   filter { "platforms:Win32" }
+      system "Windows"
+      architecture "x86"
+
+   filter { "platforms:Win64" }
+      system "Windows"
+      architecture "x86_64"
 
 project "rplsinfo"
    kind "ConsoleApp"
    language "C++"
-   targetdir "bin/%{cfg.buildcfg}"
+   targetdir "bin/%{cfg.platform}/%{cfg.buildcfg}"
+   objdir ".obj/%{cfg.platform}/%{cfg.buildcfg}"
 
    files { "*.h", "*.cpp" }
    files { "utfcpp/source/**.h" }
