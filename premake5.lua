@@ -33,6 +33,7 @@ project "rplsinfo"
 	      "USE_UTF8_CPP",
       }
       files { "rplsinfo.exe.manifest" }
+      links { "Shlwapi.lib" }
 
    filter "configurations:Debug"
       defines { "DEBUG" }
