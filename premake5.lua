@@ -30,7 +30,7 @@ project "rplsinfo"
       buildoptions { "/utf-8" }
       characterset("MBCS") -- CP65001(UTF-8)
       defines {
-	      "USE_UTF8_CPP",
+         "USE_UTF8_CPP",
          "_CRT_SECURE_NO_WARNINGS",
       }
       files { "rplsinfo.exe.manifest" }
