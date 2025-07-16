@@ -35,17 +35,17 @@
 #define APP_NAME_VER "rplsinfo version 1.5.2"
 #ifdef _MSC_VER
 # ifdef _WIN64
-#  define		ARCH	"64bit"
+#  define	ARCH	"64bit"
 # else
-#  define		ARCH	"32bit"
+#  define	ARCH	"32bit"
 # endif
 #else
-# define		ARCH	"Linux"
+# define	ARCH	"Linux"
 #endif
 #ifdef USE_UTF16
-# define		CODING	"UTF16"
+# define	CODING	"UTF16"
 #else
-# define		CODING	"UTF8"
+# define	CODING	"UTF8"
 #endif
 #define		NAMESTRING	"\n" APP_NAME_VER " ("  ARCH ", " CODING ")\n"
 
