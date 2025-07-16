@@ -360,13 +360,11 @@ void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ファ�
 	return;
 }
 #else
-#include <assert.h>
 #include <unistd.h>
 
 void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ファイルシーク用関数
 {
-	int rc = lseek(hReadFile, (off_t)filepos, SEEK_SET);
-	assert(rc != -1);
+	lseek(hReadFile, (off_t)filepos, SEEK_SET);
 	return;
 }
 #endif
