@@ -24,6 +24,10 @@ project "rplsinfo"
       defines { "_FILE_OFFSET_BITS=64" }
       --defines { "USE_ICONV" }
       defines { "USE_UTF8_CPP" }
+      buildoptions {
+        "-Wall",
+        "-Wno-sign-compare",
+      }
       linkoptions { "-static" }
 
    filter "action:vs*"
