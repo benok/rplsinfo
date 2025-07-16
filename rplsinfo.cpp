@@ -47,7 +47,7 @@
 #else
 # define		CODING	"UTF8"
 #endif
-#define		NAMESTRING		"\n" ## APP_NAME_VER ## " (" ## ARCH ## ", " ## CODING ##  ")\n"
+#define		NAMESTRING	"\n" APP_NAME_VER " ("  ARCH ", " CODING ")\n"
 
 // マクロ定義
 
