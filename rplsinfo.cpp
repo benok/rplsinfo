@@ -33,17 +33,21 @@
 
 // 定数など
 #define APP_NAME_VER "rplsinfo version 1.5.2"
-
 #ifdef _MSC_VER
-#ifdef _WIN64
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (64bit)\n"
+# ifdef _WIN64
+#  define		ARCH	"64bit"
+# else
+#  define		ARCH	"32bit"
+# endif
 #else
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (32bit)\n"
+# define		ARCH	"Linux"
 #endif
+#ifdef USE_UTF16
+# define		CODING	"UTF16"
 #else
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (linux)\n"
+# define		CODING	"UTF8"
 #endif
-
+#define		NAMESTRING		"\n" ## APP_NAME_VER ## " (" ## ARCH ## ", " ## CODING ##  ")\n"
 
 // マクロ定義
 
@@ -109,7 +113,9 @@ int main(int argc, _TCHAR** argv)
 
 
 																														// 必要なら出力ファイルを開く
-
+#ifdef USE_UTF16
+	uint32_t	numWrite;
+#endif
 	HANDLE		hWriteFile = INVALID_HANDLE_VALUE;
 
 	if (!param.bDisplay)
@@ -207,7 +213,7 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 		if (args[i][0] == L'-')
 		{
 #ifdef USE_UTF16
-			int32_t len = wcslen(args[i]);
+			int32_t len = (int32_t)wcslen(args[i]);
 #else
 			int32_t len = (int32_t)strlen(args[i]);
 #endif
