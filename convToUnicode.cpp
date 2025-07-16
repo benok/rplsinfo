@@ -1,4 +1,4 @@
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 # include "stdafx.h"
 # include <windows.h>
 #else // __linux__
@@ -15,7 +15,7 @@
 
 
 //
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #ifdef _WIN32
   #define _SNPRINTF(x, len, ...) _snprintf_s(x, len, len - 1, __VA_ARGS__)
 #else
@@ -5945,7 +5945,9 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	return bankSeq;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
+
+#if USE_ICONV
 
 #define CONVBUFSIZE 65536
 
@@ -6030,4 +6032,37 @@ char16_t* u8tou16(const char *u8str, size_t* len)
 	return u16_buf;
 }
 
-#endif // __linux__
+#endif // USE_ICONV
+
+#ifdef USE_UTF8_CPP
+
+#include "utfcpp/source/utf8.h"
+#include <string>
+#include <vector>
+
+std::string u8_result;
+std::u16string u16_result;
+
+char* u16tou8(const char16_t *u16str, size_t* len)
+{
+	std::u16string u16s(u16str);
+	u8_result.clear();
+	utf8::utf16to8(u16s.begin(), u16s.end(), std::back_inserter(u8_result));
+	if (len)
+		*len = u8_result.size();
+	return (char*)u8_result.c_str();
+}
+
+char16_t* u8tou16(const char *u8str, size_t* len)
+{
+	std::string u8s(u8str);
+	u16_result.clear();
+	utf8::utf8to16(u8s.begin(), u8s.end(), std::back_inserter(u16_result));
+	if (len)
+		*len = u16_result.size();
+	return (char16_t*)u16_result.c_str();
+}
+
+#endif // USE_UTF8_CPP
+
+#endif // !USE_UTF16

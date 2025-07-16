@@ -1,7 +1,7 @@
 // proginfo.cpp
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 #include "stdafx.h"
 #include <windows.h>
 #endif
@@ -892,7 +892,7 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 	return;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #define WCHAR char
 #define swprintf_s sprintf
 #endif
@@ -900,7 +900,7 @@ void parseSdt(const uint8_t *sdtbuf, ProgInfo *proginfo, const int32_t serviceid
 size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre, bool json_mode)
 {
 	const WCHAR	*str_genreL[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"ニュース／報道",			L"スポーツ",	L"情報／ワイドショー",	L"ドラマ",
 		L"音楽",					L"バラエティ",	L"映画",				L"アニメ／特撮",
 		L"ドキュメンタリー／教養",	L"劇場／公演",	L"趣味／教育",			L"福祉",
@@ -914,7 +914,7 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre, bool 
 	};
 
 	const WCHAR	*str_genreM[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"定時・総合", L"天気", L"特集・ドキュメント", L"政治・国会", L"経済・市況", L"海外・国際", L"解説", L"討論・会談",
 		L"報道特番", L"ローカル・地域", L"交通", L"-", L"-", L"-", L"-", L"その他",
 
@@ -1015,7 +1015,7 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre, bool 
 
 	size_t	len;
 
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 	if(genre[2] != -1) {
 		len =  swprintf_s(buf, bufsize, L"%s 〔%s〕　%s 〔%s〕　%s 〔%s〕", str_genreL[genre[0] >> 4], str_genreM[genre[0]], str_genreL[genre[1] >> 4], str_genreM[genre[1]], str_genreL[genre[2] >> 4], str_genreM[genre[2]]);
 	} else if(genre[1] != -1) {
@@ -1054,7 +1054,7 @@ size_t putGenreStr(WCHAR *buf, const size_t bufsize, const int32_t* genre, bool 
 size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 {
 	const WCHAR	*str_resolution[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"480i(525i)", L"-", L"-", L"-", L"-", L"-", L"-", L"-",
 		L"-", L"2160p", L"480i(525i)", L"1080i(1125i)", L"720p(750p)", L"240p", L"1080p(1125p)", L"-"
 #else
@@ -1064,7 +1064,7 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 	};
 
 	const WCHAR	*str_aspect[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"-", L"アスペクト比4:3", L"アスペクト比16:9 パンベクトルあり", L"アスペクト比16:9 パンベクトルなし", L"アスペクト比 > 16:9"
 #else
 		"-", "アスペクト比4:3", "アスペクト比16:9 パンベクトルあり", "アスペクト比16:9 パンベクトルなし", "アスペクト比 > 16:9"
@@ -1072,7 +1072,7 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 	};
 
 	const WCHAR	*str_audio[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"-", L"1/0モード（シングルモノ）", L"1/0＋1/0モード（デュアルモノ）", L"2/0モード（ステレオ）", L"2/1モード", L"3/0モード", L"2/2モード", L"3/1モード",
 		L"3/2モード", L"3/2＋LFEモード（3/2.1モード）", L"3/3.1モード", L"2/0/0-2/0/2-0.1モード", L"5/2.1モード", L"3/2/2.1モード", L"2/0/0-3/0/2-0.1モード", L"0/2/0-3/0/2-0.1モード",
 
@@ -1105,7 +1105,7 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 #endif
 	};
 
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 	size_t	len;
 
 	if((format & 0xFF00) == 0x0100) {
@@ -1137,21 +1137,21 @@ size_t putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format)
 size_t putSamplingrateStr(WCHAR *buf, const size_t bufsize, const int32_t samplingrate)
 {
 	const WCHAR	*str_samplingrate[] = {
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 		L"-", L"16kHz", L"22.05kHz", L"24kHz", L"-", L"32kHz", L"44.1kHz", L"48kHz"
 #else
 		"-", "16kHz", "22.05kHz", "24kHz", "-", "32kHz", "44.1kHz", "48kHz"
 #endif
 	};
 
-#ifdef _WINDOWS
+#ifdef USE_UTF16
 	return swprintf_s(buf, bufsize, L"%s", str_samplingrate[samplingrate]);
 #else
 	return sprintf(buf, "%s", str_samplingrate[samplingrate]);
 #endif
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #undef WCHAR
 #undef swprintf_s
 #endif

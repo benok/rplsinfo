@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef WINDOWS_
+#ifdef _MSC_VER
 # include "stdafx.h"
 # include <windows.h>
 #else

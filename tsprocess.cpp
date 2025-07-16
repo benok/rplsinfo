@@ -1,7 +1,7 @@
 // tsprocess.cpp
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
  #include "stdafx.h"
  #include <windows.h>
 #else
@@ -325,7 +325,7 @@ int64_t getPcrValue(const uint8_t* buf)
 // ファイル入出力関係ルーチン
 //
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 int64_t GetFileDataSize(HANDLE hReadFile)																// ファイルサイズ取得用関数
 {
 	LARGE_INTEGER		filesize;
@@ -344,13 +344,13 @@ int64_t GetFileDataSize(HANDLE hReadFile)																// ファイルサイ�
 	char procPath[255];
 	// https://stackoverflow.com/a/1189582/26736
 	sprintf(procPath, "/proc/self/fd/%d", hReadFile);
-	ssize_t fn = readlink(procPath, filePath, PATH_MAX);
+	readlink(procPath, filePath, PATH_MAX);
 	stat(filePath, &st);
 	return st.st_size;
 }
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ファイルシーク用関数
 {
 	LARGE_INTEGER	fbase;
@@ -360,18 +360,16 @@ void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ファ�
 	return;
 }
 #else
-#include <assert.h>
 #include <unistd.h>
 
 void SeekFileData(HANDLE hReadFile, const int64_t filepos)												// ファイルシーク用関数
 {
-	int rc = lseek(hReadFile, (off_t)filepos, SEEK_SET);
-	assert(rc != -1);
+	lseek(hReadFile, (off_t)filepos, SEEK_SET);
 	return;
 }
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t *numread)					// ディスク読み込み用関数
 {
 	bool	bResult = !!ReadFile(hReadFile, buf, size, (LPDWORD)numread, NULL);
@@ -386,12 +384,13 @@ bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t 
 		*numread = (uint32_t)nr;
 		return true;
 	} else {
+		*numread = 0;
 		return false;
 	}
 }
 #endif
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 bool WriteFileData(HANDLE hWriteFile, const uint8_t *buf, const uint32_t size, uint32_t *numwrite)		// ディスク書き込み用関数
 {
 	bool	bResult = !!WriteFile(hWriteFile, buf, size, (LPDWORD)numwrite, NULL);
