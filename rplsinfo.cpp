@@ -32,15 +32,16 @@
 
 
 // 定数など
+#define APP_NAME_VER "rplsinfo version 1.5.2"
 
 #ifdef _MSC_VER
 #ifdef _WIN64
-#define		NAMESTRING				"\nrplsinfo version 1.5.2 (64bit)\n"
+#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (64bit)\n"
 #else
-#define		NAMESTRING				"\nrplsinfo version 1.5.2 (32bit)\n"
+#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (32bit)\n"
 #endif
 #else
-#define		NAMESTRING				"\nrplsinfo version 1.5.2 (linux)\n"
+#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (linux)\n"
 #endif
 
 
