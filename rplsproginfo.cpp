@@ -93,16 +93,16 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
     char *p;
     p = realpath(fname, proginfo->fullpath);
 	char pathbuf[_MAX_PATH];
-	strncpy(pathbuf, p, _MAX_PATH);
+	strncpy(pathbuf, p, _MAX_PATH-1);
 	p = basename(pathbuf);
 	char* pdot = strrchr(p, '.');
 	if (pdot && pdot!=p) {
-			strncpy(proginfo->fext, pdot, _MAX_PATH);
+			strncpy(proginfo->fext, pdot, _MAX_PATH-1);
 			*pdot = '\0';
 	} else {
 			proginfo->fext[0] = '\0';
 	}
-	strncpy(proginfo->fname, p, _MAX_PATH);
+	strncpy(proginfo->fname, p, _MAX_PATH-1);
 #endif
 	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
 
