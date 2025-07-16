@@ -29,6 +29,9 @@ project "rplsinfo"
    filter "action:vs*"
       buildoptions { "/utf-8" }
       characterset("MBCS") -- CP65001(UTF-8)
+      defines {
+	      "USE_UTF8_CPP",
+      }
       files { "rplsinfo.exe.manifest" }
 
    filter "configurations:Debug"

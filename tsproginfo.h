@@ -52,7 +52,7 @@ void			parseSit(const uint8_t*, ProgInfo*, const CopyParams*);
 int32_t			parseEit(const uint8_t*, ProgInfo*, const CopyParams*);
 void			parseSdt(const uint8_t*, ProgInfo*, const int32_t, const CopyParams*);
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #define WCHAR char
 #ifndef swprintf_s
 # define swprintf_s sprintf
@@ -63,7 +63,7 @@ size_t			putGenreStr(WCHAR *, const size_t, const int32_t *, bool);
 size_t			putFormatStr(WCHAR *buf, const size_t bufsize, const int32_t format);
 size_t			putSamplingrateStr(WCHAR *, const size_t, const int32_t);
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #undef WCHAR
 #undef swprintf_s
 #endif

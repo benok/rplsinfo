@@ -256,7 +256,7 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 	return true;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #define WCHAR char
 #define swprintf_s sprintf
 #define wcscmp strcmp
@@ -272,7 +272,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 {
 	static const WCHAR	*nameList[] =
 	{
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 		L"TD",		L"地上デジタル",
 		L"BD",		L"BSデジタル",
 		L"C1",		L"CSデジタル1",
@@ -307,7 +307,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	static const WCHAR	*errNameList[] =
 	{
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 		L"unknown",
 		L"n/a"
 #else
@@ -347,7 +347,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 	return i - 1;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #undef WCHAR
 #undef L
 #undef swprintf_s

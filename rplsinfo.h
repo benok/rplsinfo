@@ -5,9 +5,14 @@
 #endif
 #include <stdint.h>
 
+#ifdef USE_UTF16
+  typedef WCHAR __WCHAR;
+#else
+  typedef char16_t __WCHAR;
+  typedef char CHAR;
+#endif
+
 #ifdef __linux__
- typedef char16_t WCHAR;
- typedef char CHAR;
  typedef char _TCHAR;
  #include <linux/limits.h>
  #define _MAX_PATH PATH_MAX
@@ -82,20 +87,20 @@ typedef struct {
 	int32_t		modelcode;
 	int32_t		recsrc;
 	int32_t		chnum;
-	WCHAR		chname[CONVBUFSIZE];
+	__WCHAR		chname[CONVBUFSIZE];
 	int32_t		chnamelen;
-	WCHAR		pname[CONVBUFSIZE];
+	__WCHAR		pname[CONVBUFSIZE];
 	int32_t		pnamelen;
-	WCHAR		pdetail[CONVBUFSIZE];
+	__WCHAR		pdetail[CONVBUFSIZE];
 	int32_t		pdetaillen;
-	WCHAR		pextend[CONVBUFSIZE];
+	__WCHAR		pextend[CONVBUFSIZE];
 	int32_t		pextendlen;
 	int32_t		genre[3];
 	int32_t		videoformat;
 	int32_t		audioformat[8];
 	int32_t		audiosamplingrate[8];
 	CHAR		audiolang[8][8];
-	WCHAR		audiotext[8][32];
+	__WCHAR		audiotext[8][32];
 	int32_t		audiotextlen[8];
 	_TCHAR		fullpath[_MAX_PATH];
 	_TCHAR		fname[_MAX_PATH];
