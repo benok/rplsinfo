@@ -386,6 +386,7 @@ bool ReadFileData(HANDLE hReadFile, uint8_t *buf, const uint32_t size, uint32_t 
 		*numread = (uint32_t)nr;
 		return true;
 	} else {
+		*numread = 0;
 		return false;
 	}
 }
