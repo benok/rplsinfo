@@ -6,11 +6,14 @@ project "rplsinfo"
    language "C++"
    targetdir "bin/%{cfg.buildcfg}"
 
-   files { "**.h", "**.cpp" }
+   files { "*.h", "*.cpp" }
+   files { "utfcpp/source/**.h" }
 
    filter "action:gmake"
       excludes { "stdafx.*", "targetver.h" }
       defines { "_FILE_OFFSET_BITS=64" }
+      --defines { "USE_ICONV" }
+      defines { "USE_UTF8_CPP" }
       linkoptions { "-static" }
 
    filter "action:vs*"
