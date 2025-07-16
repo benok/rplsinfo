@@ -109,7 +109,6 @@ int main(int argc, _TCHAR** argv)
 
 																														// 必要なら出力ファイルを開く
 
-	uint32_t	numWrite;
 	HANDLE		hWriteFile = INVALID_HANDLE_VALUE;
 
 	if (!param.bDisplay)
