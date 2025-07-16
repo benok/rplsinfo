@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="utfcpp">
+      <UniqueIdentifier>{77533721-63F5-61F7-4CB0-754B38F1E847}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utfcpp\source">
+      <UniqueIdentifier>{B709431E-23CA-BE54-EC04-08D258840331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utfcpp\source\utf8">
+      <UniqueIdentifier>{ED56052D-D93A-C682-429B-C0D52E9EB004}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="characterSets.h" />
+    <ClInclude Include="convToUnicode.h" />
+    <ClInclude Include="rplsinfo.h" />
+    <ClInclude Include="rplsproginfo.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="tsprocess.h" />
+    <ClInclude Include="tsproginfo.h" />
+    <ClInclude Include="utfcpp\source\utf8.h">
+      <Filter>utfcpp\source</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\checked.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\core.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\cpp11.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\cpp17.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\cpp20.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+    <ClInclude Include="utfcpp\source\utf8\unchecked.h">
+      <Filter>utfcpp\source\utf8</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="characterSets.cpp" />
+    <ClCompile Include="convToUnicode.cpp" />
+    <ClCompile Include="rplsinfo.cpp" />
+    <ClCompile Include="rplsproginfo.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="tsprocess.cpp" />
+    <ClCompile Include="tsproginfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="rplsinfo.exe.manifest" />
+  </ItemGroup>
+</Project>
