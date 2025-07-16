@@ -713,7 +713,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->audioformat[audioNum]);
 				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " ");
 				slen += putSamplingrateStr(sstr + slen, CONVBUFSIZE - slen, proginfo->audiosamplingrate[audioNum]);
-				if (proginfo->audiotextlen[audioNum] != 0) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " %s", proginfo->audiotext[audioNum]);
+				if (proginfo->audiotextlen[audioNum] != 0) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " %s", u16tou8(proginfo->audiotext[audioNum]));
 				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " (%hs)", proginfo->audiolang[audioNum]);
 			}
 			if (param->bJsonOutput) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "\"");
