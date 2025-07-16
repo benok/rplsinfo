@@ -5945,7 +5945,7 @@ BankSet* checkMojiSequenceU32T(const uint32_t *sbuf, const size_t total_length, 
 	return bankSeq;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 
 #if USE_ICONV
 
@@ -6065,4 +6065,4 @@ char16_t* u8tou16(const char *u8str, size_t* len)
 
 #endif // USE_UTF8_CPP
 
-#endif // __linux__
+#endif // !USE_UTF16

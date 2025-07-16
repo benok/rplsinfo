@@ -60,11 +60,11 @@ int32_t		rplsTsCheck(HANDLE);
 bool		rplsMakerCheck(const uint8_t *, const int32_t);
 bool		readRplsProgInfo(HANDLE, ProgInfo *, const CopyParams *);
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #define WCHAR char
 #endif
 size_t		getRecSrcStr(WCHAR *, const size_t, const int32_t);
-#ifdef __linux__
+#ifndef USE_UTF16
 #undef WCHAR
 #endif
 

@@ -46,7 +46,7 @@
 
 // マクロ定義
 
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 #define		printMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #define		printErrMsg(fmt, ...)	_tprintf(_T(fmt), __VA_ARGS__)
 #else
@@ -58,7 +58,7 @@
 
 void	initCopyParams(CopyParams*);
 bool	parseCopyParams(const int32_t, _TCHAR *[], CopyParams *);
-size_t	convForCsv(WCHAR*, const size_t, const WCHAR*, const size_t, const CopyParams*, const bool, const bool);
+size_t	convForCsv(__WCHAR*, const size_t, const __WCHAR*, const size_t, const CopyParams*, const bool, const bool);
 void	outputProgInfo(HANDLE, const ProgInfo*, const CopyParams*);
 
 
@@ -76,8 +76,15 @@ int main(int argc, _TCHAR** argv)
  #define _T(x) x
 #endif
 
+#ifdef USE_UTF16
 	_tsetlocale(LC_ALL, _T(""));
-
+#else
+	setlocale(LC_ALL, ".UTF-8"); // https://learn.microsoft.com/ja-jp/cpp/c-runtime-library/reference/setlocale-wsetlocale?view=msvc-170#utf-8-support
+# ifdef _MSC_VER
+	UINT codepage_before = GetConsoleOutputCP();
+	SetConsoleOutputCP(CP_UTF8);
+# endif // _MSC_VER
+#endif
 
 	// パラメータチェック
 
@@ -145,6 +152,12 @@ int main(int argc, _TCHAR** argv)
 #endif
 	}
 
+#ifdef _MSC_VER
+# ifndef USE_UTF16
+	SetConsoleOutputCP(codepage_before);
+# endif
+#endif
+
 	return 0;
 }
 
@@ -174,6 +187,11 @@ void initCopyParams(CopyParams* param)
 	return;
 }
 
+#ifdef USE_UTF16
+#  define ATOI _wtoi
+#else
+#  define ATOI atoi
+#endif
 
 bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 {
@@ -184,7 +202,12 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 	{
 		if (args[i][0] == L'-')
 		{
-			for (int32_t j = 1; j < (int32_t)wcslen(args[i]); j++)
+#ifdef USE_UTF16
+			int32_t len = wcslen(args[i]);
+#else
+			int32_t len = (int32_t)strlen(args[i]);
+#endif
+			for (int32_t j = 1; j < len; j++)
 			{
 				switch (args[i][j])
 				{
@@ -300,19 +323,19 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 					param->bUseBOM = false;
 					break;
 				case L'F':
-					if ((i == (argn - 1)) || (_wtoi(args[i + 1]) < 0) || (_wtoi(args[i + 1]) > 99)) {
+					if ((i == (argn - 1)) || (ATOI(args[i + 1]) < 0) || (ATOI(args[i + 1]) > 99)) {
 						printErrMsg("-F オプションの引数が異常です.\n");
 						return	false;
 					}
-					param->tsfilepos = _wtoi(args[i + 1]);
+					param->tsfilepos = ATOI(args[i + 1]);
 					bArgSkip = true;
 					break;
 				case L'l':
-					if ((i == (argn - 1)) || (_wtoi(args[i + 1]) <= 0)) {
+					if ((i == (argn - 1)) || (ATOI(args[i + 1]) <= 0)) {
 						printErrMsg("-l オプションの引数が異常です.\n");
 						return false;
 					}
-					param->packet_limit = (int64_t)_wtoi(args[i + 1]) * 5600;
+					param->packet_limit = (int64_t)ATOI(args[i + 1]) * 5600;
 					bArgSkip = true;
 					break;
 				default:
@@ -359,7 +382,7 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 }
 
 
-size_t convForCsv(WCHAR* dbuf, const size_t bufsize, const WCHAR* sbuf, const size_t slen, const CopyParams* param, const bool is_first, const bool is_detail)
+size_t convForCsv(__WCHAR* dbuf, const size_t bufsize, const __WCHAR* sbuf, const size_t slen, const CopyParams* param, const bool is_first, const bool is_detail)
 {
 	size_t	dst = 0;
 
@@ -369,7 +392,7 @@ size_t convForCsv(WCHAR* dbuf, const size_t bufsize, const WCHAR* sbuf, const si
 
 	for (size_t src = 0; src < slen; src++)
 	{
-		const WCHAR	s = sbuf[src];
+		const __WCHAR	s = sbuf[src];
 		bool	bOutput = true;
 
 		if (param->bNoControl && (s < L' '))	bOutput = false;										// 制御コードは出力しない
@@ -394,7 +417,7 @@ size_t convForCsv(WCHAR* dbuf, const size_t bufsize, const WCHAR* sbuf, const si
 
 void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* param)
 {
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 	WCHAR		sstr[CONVBUFSIZE];
 	WCHAR		dstr[CONVBUFSIZE];
 #else
@@ -414,7 +437,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		switch (param->flags[i])
 		{
 		case F_FileName:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイル名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"filename\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s%s", proginfo->fname, proginfo->fext);
@@ -427,7 +450,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_FileNameFullPath:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[フルパスファイル名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"fullpath\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->fullpath);
@@ -440,7 +463,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_FileSize:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイルサイズ]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"fsize\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%lld", proginfo->fsize);
@@ -451,7 +474,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecDate:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画日付]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"date\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.4d/%.2d/%.2d", proginfo->recyear, proginfo->recmonth, proginfo->recday);
@@ -464,7 +487,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecTime:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画時刻]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"time\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->rechour, proginfo->recmin, proginfo->recsec);
@@ -477,7 +500,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecDuration:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[録画期間]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"duration\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.2d:%.2d:%.2d", proginfo->durhour, proginfo->durmin, proginfo->dursec);
@@ -490,7 +513,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecTimeZone:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[タイムゾーン]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"tz_id\":");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%d", proginfo->rectimezone);
@@ -501,7 +524,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_MakerID:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカーID]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"maker_id\":");
 			if (proginfo->makerid != -1) {
@@ -528,7 +551,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ModelCode:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[メーカー機種コード]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"model_id\":");
 			if (proginfo->modelcode != -1) {
@@ -555,7 +578,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_RecSrc:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送種別]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"recsrc\":\"");
 			slen += getRecSrcStr(sstr + slen, CONVBUFSIZE - slen, proginfo->recsrc);
@@ -568,7 +591,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ChannelNum:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[チャンネル番号]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"ch\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%.3dch", proginfo->chnum);
@@ -581,7 +604,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ChannelName:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[放送局名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"station\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->chname);
@@ -594,7 +617,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgName:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組名]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"title\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pname);
@@ -607,7 +630,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgDetail:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組内容]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"detail\":\"");
 			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%s", proginfo->pdetail);
@@ -620,7 +643,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgExtend:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[内容詳細]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"extend\":\"");
 			if (proginfo->pextendlen == -1) {
@@ -643,7 +666,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgGenre:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[番組ジャンル]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"genre\":");
 			slen += putGenreStr(sstr + slen, CONVBUFSIZE - slen, proginfo->genre, param->bJsonOutput);
@@ -654,7 +677,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgVideo:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[映像]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"videofmt\":\"");
 			slen += putFormatStr(sstr + slen, CONVBUFSIZE - slen, proginfo->videoformat);
@@ -667,7 +690,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #endif
 			break;
 		case F_ProgAudio:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			if (param->bItemName) slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"[音声]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"audiofmt\":\"");
 			for (int32_t audioNum = 0; audioNum < 8; audioNum++)
@@ -705,11 +728,11 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 
 		// 出力形式に応じてsstrを調整
 		bool is_detail = ((param->flags[i] == F_ProgDetail) || (param->flags[i] == F_ProgExtend)); // 項目が詳細情報か否か(JSON出力用)
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 		size_t	dlen = convForCsv(dstr, CONVBUFSIZE - 5, sstr, slen, param, i == 0, is_detail);
 #else
 		size_t  u16slen;
-		WCHAR*  u16s = u8tou16(sstr, &u16slen);
+		__WCHAR*  u16s = u8tou16(sstr, &u16slen);
 		size_t	dlen = convForCsv(dstr, CONVBUFSIZE - 5, u16s, u16slen, param, i == 0, is_detail);
 #endif
 
@@ -721,7 +744,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 			{
 			case S_NORMAL:
 			case S_CSV:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 				dstr[dlen++] = L',';								// COMMA
 #else
 				dstr[dlen++] = ',';									// COMMA
@@ -731,7 +754,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				dstr[dlen++] = 0x0009;								// TAB
 				break;
 			case S_SPACE:
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 				dstr[dlen++] = L' ';								// SPACE
 #else
 				dstr[dlen++] = ' ';									// SPACE
@@ -763,18 +786,18 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 		// データ出力
 
 		if (!param->bDisplay) {
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			WriteFileData(hFile, (uint8_t*)dstr, (uint32_t)dlen * sizeof(WCHAR), &numWrite);		// ディスク出力
 #else
 			dstr[dlen] = 0x0000;
 			size_t len;
 			char* u8 = u16tou8(dstr, &len);
-			WriteFileData(hFile, (uint8_t*)u8, len, &numWrite);										// ディスク出力
+			WriteFileData(hFile, (uint8_t*)u8, (uint32_t)len, &numWrite);							// ディスク出力
 #endif
 		}
 		else {
 			dstr[dlen] = 0x0000;
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 			printMsg("%s", dstr);																	// コンソール出力
 #else
 			printMsg("%s", u16tou8(dstr));															// コンソール出力

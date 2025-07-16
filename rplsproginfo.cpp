@@ -4,6 +4,7 @@
 #ifdef _MSC_VER
  #include "stdafx.h"
  #include <windows.h>
+ #include <shlwapi.h>
 #else
  #include <stdlib.h>
  #include <fcntl.h>
@@ -70,9 +71,24 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 
 	// 番組情報の読み込み
 #ifdef _MSC_VER
+#  ifdef USE_UTF16
 	_wfullpath(proginfo->fullpath, fname, _MAX_PATH);																	// フルパス名取得
 	_wsplitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);			// ベースファイル名と拡張子
-	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
+#  else
+	// not works.
+	//_fullpath(proginfo->fullpath, fname, _MAX_PATH);																	// フルパス名取得
+	//_splitpath_s(proginfo->fullpath, NULL, 0, NULL, 0, proginfo->fname, _MAX_PATH, proginfo->fext, _MAX_PATH);		// ベースファイル名と拡張子
+
+	// <workaround>
+	GetFullPathNameA(fname, _MAX_PATH, proginfo->fullpath, &fname);
+	strcpy(proginfo->fname, PathFindFileNameA(proginfo->fullpath));
+	char* pdot = strrchr(proginfo->fname, '.');
+	if (pdot && pdot != proginfo->fname) {
+		*pdot = '\0';
+	}
+	strcpy(proginfo->fext, PathFindExtensionA(proginfo->fullpath));
+	// </workaround>
+#  endif
 #else
     char *p;
     p = realpath(fname, proginfo->fullpath);
@@ -87,8 +103,9 @@ bool readFileProgInfo(_TCHAR *fname, ProgInfo* proginfo, const CopyParams* param
 			proginfo->fext[0] = '\0';
 	}
 	strncpy(proginfo->fname, p, _MAX_PATH);
-	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
 #endif
+	proginfo->fsize = GetFileDataSize(hFile);																			// ファイルサイズ取得
+
 	bool	bResult;
 
 	if (srcfiletype == FILE_RPLS) {
@@ -256,7 +273,7 @@ bool readRplsProgInfo(HANDLE hFile, ProgInfo *proginfo, const CopyParams *param)
 	return true;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #define WCHAR char
 #define swprintf_s sprintf
 #define wcscmp strcmp
@@ -272,7 +289,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 {
 	static const WCHAR	*nameList[] =
 	{
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 		L"TD",		L"地上デジタル",
 		L"BD",		L"BSデジタル",
 		L"C1",		L"CSデジタル1",
@@ -307,7 +324,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 
 	static const WCHAR	*errNameList[] =
 	{
-#ifdef _MSC_VER
+#ifdef USE_UTF16
 		L"unknown",
 		L"n/a"
 #else
@@ -347,7 +364,7 @@ size_t getRecSrcStr(WCHAR *dst, const size_t maxbufsize, const int32_t src)
 	return i - 1;
 }
 
-#ifdef __linux__
+#ifndef USE_UTF16
 #undef WCHAR
 #undef L
 #undef swprintf_s
