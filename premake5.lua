@@ -31,6 +31,7 @@ project "rplsinfo"
       characterset("MBCS") -- CP65001(UTF-8)
       defines {
 	      "USE_UTF8_CPP",
+         "_CRT_SECURE_NO_WARNINGS",
       }
       files { "rplsinfo.exe.manifest" }
       links { "Shlwapi.lib" }
