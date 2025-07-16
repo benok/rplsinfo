@@ -33,17 +33,21 @@
 
 // 定数など
 #define APP_NAME_VER "rplsinfo version 1.5.2"
-
 #ifdef _MSC_VER
-#ifdef _WIN64
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (64bit)\n"
+# ifdef _WIN64
+#  define		ARCH	"64bit"
+# else
+#  define		ARCH	"32bit"
+# endif
 #else
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (32bit)\n"
+# define		ARCH	"Linux"
 #endif
+#ifdef USE_UTF16
+# define		CODING	"UTF16"
 #else
-#define		NAMESTRING				"\n" ## APP_NAME_VER ## " (linux)\n"
+# define		CODING	"UTF8"
 #endif
-
+#define		NAMESTRING		"\n" ## APP_NAME_VER ## " (" ## ARCH ## ", " ## CODING ##  ")\n"
 
 // マクロ定義
 
