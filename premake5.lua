@@ -1,6 +1,8 @@
 workspace "rplsinfo"
    configurations { "Debug", "Release" }
-   platforms { "Win32", "Win64" }
+
+   filter "system:windows"
+      platforms { "Win32", "Win64" }
 
    filter { "platforms:Win32" }
       system "Windows"
