@@ -45,19 +45,19 @@ endef
 ifeq ($(config),debug)
 TARGETDIR = bin/Debug
 TARGET = $(TARGETDIR)/rplsinfo
-OBJDIR = obj/Debug
+OBJDIR = .obj/Debug
 DEFINES += -D_FILE_OFFSET_BITS=64 -DUSE_UTF8_CPP -DDEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wno-sign-compare
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wno-sign-compare
 ALL_LDFLAGS += $(LDFLAGS) -static
 
 else ifeq ($(config),release)
 TARGETDIR = bin/Release
 TARGET = $(TARGETDIR)/rplsinfo
-OBJDIR = obj/Release
+OBJDIR = .obj/Release
 DEFINES += -D_FILE_OFFSET_BITS=64 -DUSE_UTF8_CPP -DNDEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -Wall -Wno-sign-compare
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2 -Wall -Wno-sign-compare
 ALL_LDFLAGS += $(LDFLAGS) -s -static
 
 endif
