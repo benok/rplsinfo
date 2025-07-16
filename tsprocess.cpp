@@ -344,7 +344,7 @@ int64_t GetFileDataSize(HANDLE hReadFile)																// ファイルサイ�
 	char procPath[255];
 	// https://stackoverflow.com/a/1189582/26736
 	sprintf(procPath, "/proc/self/fd/%d", hReadFile);
-	ssize_t fn = readlink(procPath, filePath, PATH_MAX);
+	readlink(procPath, filePath, PATH_MAX);
 	stat(filePath, &st);
 	return st.st_size;
 }

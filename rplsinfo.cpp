@@ -476,11 +476,11 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 #ifdef USE_UTF16
 			if (param->bItemName) slen = swprintf_s(sstr, CONVBUFSIZE, L"[ファイルサイズ]\r\n");
 			if (param->bJsonOutput) slen = swprintf_s(sstr, CONVBUFSIZE, L"\"fsize\":");
-			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%lld", proginfo->fsize);
+			slen += swprintf_s(sstr + slen, CONVBUFSIZE - slen, L"%ld", proginfo->fsize);
 #else
 			if (param->bItemName) slen = snprintf(sstr, CONVBUFSIZE, "[ファイルサイズ]\r\n");
 			if (param->bJsonOutput) slen = snprintf(sstr, CONVBUFSIZE, "\"fsize\":");
-			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%lld", proginfo->fsize);
+			slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "%ld", proginfo->fsize);
 #endif
 			break;
 		case F_RecDate:
@@ -725,7 +725,7 @@ void outputProgInfo(HANDLE hFile, const ProgInfo* proginfo, const CopyParams* pa
 				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " ");
 				slen += putSamplingrateStr(sstr + slen, CONVBUFSIZE - slen, proginfo->audiosamplingrate[audioNum]);
 				if (proginfo->audiotextlen[audioNum] != 0) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " %s", u16tou8(proginfo->audiotext[audioNum]));
-				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " (%hs)", proginfo->audiolang[audioNum]);
+				slen += snprintf(sstr + slen, CONVBUFSIZE - slen, " (%s)", proginfo->audiolang[audioNum]);
 			}
 			if (param->bJsonOutput) slen += snprintf(sstr + slen, CONVBUFSIZE - slen, "\"");
 #endif
