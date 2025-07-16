@@ -209,7 +209,7 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 		if (args[i][0] == L'-')
 		{
 #ifdef USE_UTF16
-			int32_t len = wcslen(args[i]);
+			int32_t len = (int32_t)wcslen(args[i]);
 #else
 			int32_t len = (int32_t)strlen(args[i]);
 #endif
