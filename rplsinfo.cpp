@@ -127,8 +127,12 @@ int main(int argc, _TCHAR** argv)
 		fsize = GetFileDataSize(hWriteFile);																			// ファイルサイズ取得
 
 		if (param.bUseBOM && (fsize == 0)) {
+#ifdef USE_UTF16
 			const WCHAR	bom = 0xFEFF;
 			WriteFileData(hWriteFile, (uint8_t*)&bom, sizeof(bom), &numWrite);											// ファイルが空ならBOM出力
+#else
+			// TODO: enable UTF8 BOM output here?
+#endif
 		}
 		else {
 			SeekFileData(hWriteFile, fsize);																			// 空でないならファイルの最後尾に移動
