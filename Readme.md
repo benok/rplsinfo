@@ -1,20 +1,22 @@
 
 # rplsinfo
 
-## Linuxサポートについて
+## 本フォークについて
 
-Windows版の[rplsinfo (tsukumijima/rplsinfo)](https://github.com/tsukumijima/rplsinfo)をフォークして、Linuxでも動作するように変更を加えたものです。
+@tsukumijimaさんの[rplsinfo (tsukumijima/rplsinfo)](https://github.com/tsukumijima/rplsinfo)をフォークして、
+下記の変更を行ったものです。
 
-また、出力形式として、JSON出力に対応しました。
+- Linuxで動作するように変更(Windowsでもビルド可能)
+- 出力コードをUTF-16からUTF-8に変更(WindowsではUTF-16でもビルド可能)
+- 出力形式として、JSON出力に対応
 
 ### Linux版の動作について
 
-UTF-8環境で、手元のBDAVディスクのrplsファイルの情報取得が動作することを確認しました。
-(内部でlibiconvを使用していて、出力はUTF-8に変換されます。)
+UTF-8環境で、手元のBDAVディスクのrplsファイルの情報取得が動作することを確認しました。(出力はUTF-8に変換されます。)
 
-あまりテストしていませんが、4GB以上のm2tsファイルからも、正しく情報取得できているようです。
+あまりテストできてはいませんが、4GB以上のm2tsファイルからも、正しく情報取得できているようです。
 
-内部でiconvを使用してコード変換しているなどの理由から、もしかしたら、オリジナルのWindows版には無い文字化けなどが発生するかもしれません。
+内部で[UTF8-CPP](https://github.com/nemtrif/utfcpp)を使用してコード変換しているなどの理由から、もしかしたら、オリジナルのWindows版には無い文字化けなどが発生するかもしれません。
 
 ### Linux版のビルドについて
 
@@ -63,21 +65,39 @@ docker build . -t benok/rplsinfo:latest
 
 (使用方法は前述の通り。ローカルでビルドしたイメージが優先して使用されます。)
 
-### 変更したコードについて
+### Windows版のビルドについて
 
-Windowsでもビルドできるように`#ifdef`でソースコードは分離していますが、ファイルエンコードをすべてUTF-8に変更しているため、`iconv(1)`などを使用して、同一コードをWindowsでビルドする際には、ソースファイルをUTF-16LEにエンコードし直す必要があります。
+VisualStudio 2022の場合はpremake5で出力(`premake5 vs2022`)したslnファイル、vcxprojファイルが付属していますので、IDEからslnファイルを開いてそのままビルドできます。
 
-ファイルを追加したり、premake5.luaファイルを変更した場合は、`premake5 gmake`を実行してMakefileを更新する必要があります(要[premake](https://premake.github.io/)インストール)。
+それ以外のバージョンをお使いの場合は、[premake5](https://premake.github.io/)をインストールして、`premake5 vs2017`のようにお使いのバージョン用のslnファイル、vcxprojファイルを生成してからslnファイルを開いてビルドしてみてください。
+
+(ただし、VS2022 Comunity Edition以外でのビルドは未確認です。)
+
+#### WindowsでUTF-16LE出力版が必要な場合
+
+もし、フォーク元と同じ、UTF-16LEでの出力が必要な場合は、付属のバッチファイル(`prepare_utf16_build.bat`)を実行することで、UTF-16をサポートする設定のソリューションファイルが生成できます。(要premake5, nkfの事前インストール)。
+vs2022以外でのビルドの場合、バッチファイル内のACTIONを書き換えてください。
+
+### 変更したコードと拡張時の注意
+
+- ファイルエンコードをすべてUTF-8に変更しており、fork元のrplsinfoと異なり、
+Windowsでビルドしたものも、通常は出力コードがUTF-8になります。
+
+- Linux対応やUTF-8対応で、マクロやtypedefを使って、かなり強引な手法を使ってビルドを行っているため、元の型が変わっている場合がありコードがとても読みにくいと思います。
+
+- もしファイルを追加したり、premake5.luaファイルを変更した場合は、`premake5 gmake`や`premake5 vs2022`(等)を実行してMakefile/ソリューションファイルを更新する必要があります(要[premake](https://premake.github.io/)インストール)。
+
+### 変更履歴
+
+- 1.5.2
+  - Linux対応版(初出)
+- 1.5.3
+  - JSON出力対応
+  - ファイル出力時に正しく出力されないのを修正(Linuxのみ)
+  - Windowsで正しくビルドできなかったのを修正
+  - その他、潜在的な問題を修正
 
 ### 今後について
-
-#### 面倒なのでやらなそうなこと
-
-- 各種リテラル文字列がソースに埋め込まれているのを、別のリソースファイルに分離すると良いかも (ソースの文字コード変換は不要にできるけど、作業大変)
-- ifdefが辛いので、VC++でもUTF-8でビルドできるようにコードを整理してしまう手もあるかもしれない
-  - (のだが、WindowsのDTVツール群が既存のrplstools(=UTF-16)前提で作られていそうなので出力エンコーディングは切り替えできるようにしつつデフォルトをUTF-16にするのが良さそう)
-- `premake5 vs2022`で出力したslnファイルのビルドをWindowsから試す
-- mingwのgccでもビルドできるはずなので、めんどくさがらずにpremakeのconfigulationで、Linux/Windowsを分離したほうがベター
 
 #### もしかしたらやるかも
 
