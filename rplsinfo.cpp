@@ -109,8 +109,9 @@ int main(int argc, _TCHAR** argv)
 
 
 																														// 必要なら出力ファイルを開く
-
+#ifdef USE_UTF16
 	uint32_t	numWrite;
+#endif
 	HANDLE		hWriteFile = INVALID_HANDLE_VALUE;
 
 	if (!param.bDisplay)
