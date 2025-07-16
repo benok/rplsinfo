@@ -28,6 +28,8 @@ project "rplsinfo"
 
    filter "action:vs*"
       buildoptions { "/utf-8" }
+      characterset("MBCS") -- CP65001(UTF-8)
+      files { "rplsinfo.exe.manifest" }
 
    filter "configurations:Debug"
       defines { "DEBUG" }

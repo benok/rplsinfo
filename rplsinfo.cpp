@@ -76,8 +76,15 @@ int main(int argc, _TCHAR** argv)
  #define _T(x) x
 #endif
 
+#ifdef USE_UTF16
 	_tsetlocale(LC_ALL, _T(""));
-
+#else
+	setlocale(LC_ALL, ".UTF-8"); // https://learn.microsoft.com/ja-jp/cpp/c-runtime-library/reference/setlocale-wsetlocale?view=msvc-170#utf-8-support
+# ifdef _MSC_VER
+	UINT codepage_before = GetConsoleOutputCP();
+	SetConsoleOutputCP(CP_UTF8);
+# endif // _MSC_VER
+#endif
 
 	// パラメータチェック
 
@@ -144,6 +151,12 @@ int main(int argc, _TCHAR** argv)
 		close(hWriteFile);
 #endif
 	}
+
+#ifdef _MSC_VER
+# ifndef USE_UTF16
+	SetConsoleOutputCP(codepage_before);
+# endif
+#endif
 
 	return 0;
 }
