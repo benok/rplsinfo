@@ -32,7 +32,7 @@
 
 
 // 定数など
-#define APP_NAME_VER "rplsinfo version 1.5.3"
+#define APP_NAME_VER "rplsinfo version 1.5.4"
 #ifdef _MSC_VER
 # ifdef _WIN64
 #  define	ARCH	"64bit"
