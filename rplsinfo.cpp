@@ -395,6 +395,7 @@ bool parseCopyParams(const int32_t argn, _TCHAR *args[], CopyParams *param)
 size_t convForCsv(__WCHAR* dbuf, const size_t bufsize, const __WCHAR* sbuf, const size_t slen, const CopyParams* param, const bool is_first, const bool is_detail)
 {
 	size_t	dst = 0;
+	int	n_skip = 3;
 
 	if (param->bJsonOutput && is_first) dbuf[dst++] = 0x007b;		//  「{」						// JSON用出力なら先頭に"{"を出力
 
@@ -412,7 +413,11 @@ size_t convForCsv(__WCHAR* dbuf, const size_t bufsize, const __WCHAR* sbuf, cons
 		// JSONの詳細出力時改行を\nに変換
 		if (param->bJsonOutput && is_detail && (s == 0x000D))	{ dbuf[dst++] = 0x005c; dbuf[dst++] = 0x006e; bOutput = false; }
 		if (param->bJsonOutput && (s == 0x000A))	bOutput = false;
-
+		// JSONの詳細出力時「"」の前に「\」でエスケープ(ただし最初の3つと末尾の1つは除く＝本文内の「"」のみ処理)
+		if (param->bJsonOutput && is_detail && (s == 0x0022)) {
+			if ((n_skip-- <= 0) && (src < slen-1))
+				dbuf[dst++] = 0x005c;
+		}
 		if (param->bDQuot && (s == 0x0022) && (dst < bufsize)) dbuf[dst++] = 0x0022;					// CSV用出力なら「"」の前に「"」でエスケープ
 		if (bOutput && (dst < bufsize)) dbuf[dst++] = s;										// 出力
 	}
